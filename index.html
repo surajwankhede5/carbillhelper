@@ -1546,12 +1546,20 @@
 
                 <div class="form-group">
                     <label class="form-label">Upload Service Estimate <span class="required">*</span></label>
-                    <input type="file" id="fileInput" accept="image/*,.pdf" multiple required style="display: none;">
-                    <div class="upload-box" onclick="document.getElementById('fileInput').click()">
+                    <input type="file" id="fileInput" accept="image/*,.pdf" multiple style="display: none;">
+                    <div class="upload-box" id="uploadBox" onclick="document.getElementById('fileInput').click()">
                         <div class="upload-icon">📄</div>
                         <p><strong>Click to upload</strong> your service estimate</p>
                         <p style="font-size: 0.9rem; margin-top: 0.5rem;">Supports: JPG, PNG, PDF (Max 10MB)</p>
                     </div>
+                    <!-- Upload Progress Bar -->
+                    <div id="uploadProgress" style="display:none; margin-top:12px;">
+                        <div style="background:rgba(255,255,255,0.1);border-radius:8px;overflow:hidden;height:10px;">
+                            <div id="progressBar" style="height:100%;background:linear-gradient(90deg,var(--primary),var(--accent));width:0%;transition:width 0.3s;border-radius:8px;"></div>
+                        </div>
+                        <p id="progressText" style="font-size:12px;color:var(--text-dim);margin-top:6px;text-align:center;">⏳ Uploading files... 0%</p>
+                    </div>
+                    <div id="uploadedFiles" style="margin-top:8px;"></div>
                 </div>
 
                 <div class="form-group">
@@ -1784,6 +1792,10 @@
         // ══════════════════════════════════════
         const SUPABASE_URL = 'https://kwrrgzlvtqvepdfbhiy.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_x2eMG-cbxLnR9gQZ4pQg-g_t-mlwbx_';
+
+        // ── CLOUDINARY CONFIG ──
+        const CLOUDINARY_CLOUD = 'dowolxo8v';
+        const CLOUDINARY_PRESET = 'carbillhelper';
 
         const { createClient } = supabase;
         const sbClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -2179,44 +2191,109 @@
             }
         }
 
-        // ── File upload UI ──
+        // ── File Upload UI + Cloudinary ──
         const fileInput = document.getElementById('fileInput');
-        const uploadBox = document.querySelector('.upload-box');
-        
+        const uploadBox = document.getElementById('uploadBox');
+        let uploadedFileLinks = []; // stores {name, url} after Cloudinary upload
+
         fileInput.addEventListener('change', function(e) {
             const files = e.target.files;
-            if (files.length > 0) {
-                const fileNames = Array.from(files).map(f => f.name).join(', ');
-                const sizeMB = (Array.from(files).reduce((s,f)=>s+f.size,0)/(1024*1024)).toFixed(2);
-                uploadBox.innerHTML = `
-                    <div class="upload-icon">✅</div>
-                    <p><strong>${files.length} file(s) selected</strong></p>
-                    <p style="font-size:0.9rem;margin-top:0.5rem;color:var(--primary);">${fileNames}</p>
-                    <p style="font-size:0.85rem;margin-top:0.5rem;color:var(--text-dim);">Total: ${sizeMB} MB</p>
-                    <p style="font-size:0.9rem;margin-top:1rem;color:var(--text-dim);">Click to change</p>
-                `;
-            }
+            if (!files.length) return;
+            const names = Array.from(files).map(f => f.name).join(', ');
+            const sizeMB = (Array.from(files).reduce((s,f)=>s+f.size,0)/(1024*1024)).toFixed(2);
+            uploadBox.innerHTML = `
+                <div class="upload-icon">✅</div>
+                <p><strong>${files.length} file(s) selected</strong></p>
+                <p style="font-size:0.9rem;margin-top:0.5rem;color:var(--primary);">${names}</p>
+                <p style="font-size:0.85rem;margin-top:0.5rem;color:var(--text-dim);">Total: ${sizeMB} MB — Click to change</p>
+            `;
+            uploadedFileLinks = []; // reset previous uploads
         });
 
-        // ── Bill Review Form — Supabase + WhatsApp ──
+        // Upload single file to Cloudinary
+        async function uploadToCloudinary(file, index, total) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', CLOUDINARY_PRESET);
+            formData.append('folder', 'carbillhelper/estimates');
+
+            const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/auto/upload`, {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+
+            // Update progress
+            const pct = Math.round(((index + 1) / total) * 100);
+            document.getElementById('progressBar').style.width = pct + '%';
+            document.getElementById('progressText').textContent = `⏳ Uploading... ${pct}% (${index+1}/${total} files)`;
+
+            return { name: file.name, url: data.secure_url };
+        }
+
+        // ── Bill Review Form — Cloudinary + Supabase + WhatsApp ──
         document.getElementById('uploadForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+
+            const name = document.getElementById('customerName').value.trim();
+            const whatsapp = document.getElementById('whatsappNumber').value.trim();
+            const plan = document.getElementById('planType').value;
+
+            if (!name || !whatsapp || !plan) {
+                alert('⚠️ Please fill all required fields.');
+                return;
+            }
+
+            const files = fileInput.files;
+            if (!files.length) {
+                alert('⚠️ Please upload your service estimate (photo or PDF).');
+                return;
+            }
+
             const submitButton = this.querySelector('.submit-button');
             submitButton.disabled = true;
-            submitButton.innerHTML = 'Submitting...<span class="spinner"></span>';
+            submitButton.innerHTML = 'Uploading files...<span class="spinner"></span>';
+
+            // Show progress bar
+            document.getElementById('uploadProgress').style.display = 'block';
+            document.getElementById('progressBar').style.width = '0%';
+            document.getElementById('progressText').textContent = '⏳ Uploading files... 0%';
+
+            // Upload all files to Cloudinary
+            uploadedFileLinks = [];
+            try {
+                for (let i = 0; i < files.length; i++) {
+                    const result = await uploadToCloudinary(files[i], i, files.length);
+                    uploadedFileLinks.push(result);
+                }
+            } catch (err) {
+                console.error('Cloudinary upload failed:', err);
+                alert('⚠️ File upload failed. Please try again.');
+                submitButton.disabled = false;
+                submitButton.innerHTML = 'Get Free Analysis Now';
+                document.getElementById('uploadProgress').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('progressText').textContent = '✅ Files uploaded successfully!';
+            submitButton.innerHTML = 'Saving details...<span class="spinner"></span>';
 
             const refId = 'CBH' + Date.now().toString().slice(-8);
+            const fileLinksText = uploadedFileLinks.map(f => f.url).join('\n');
+            const fileLinksForWA = uploadedFileLinks.map((f,i) => `📎 File ${i+1}: ${f.url}`).join('\n');
+
             const fd = {
-                name: document.getElementById('customerName').value,
-                whatsapp: document.getElementById('whatsappNumber').value,
-                plan: document.getElementById('planType').value,
+                name,
+                whatsapp,
+                plan,
                 car_brand: document.getElementById('carBrand').value,
                 car_model: document.getElementById('carModel').value,
                 fuel_type: document.getElementById('fuelType').value,
                 purchase_year: document.getElementById('purchaseYear').value || null,
                 odometer: document.getElementById('odometer').value || null,
                 notes: document.getElementById('notes').value || null,
-                ref_id: refId
+                ref_id: refId,
+                file_urls: fileLinksText
             };
 
             // Save to Supabase
@@ -2224,28 +2301,49 @@
                 const { error } = await sbClient.from('bill_leads').insert([fd]);
                 if (error) console.error('Supabase error:', error.message);
             } catch (err) {
-                console.error('Insert failed:', err);
+                console.error('Supabase insert failed:', err);
             }
 
-            // WhatsApp notification
-            const msg = `🚗 *CarBillHelper - New Bill Review*\n\n📋 *Ref:* ${refId}\n👤 ${fd.name} | 📞 ${fd.whatsapp}\n💳 Plan: ${fd.plan}\n🚙 ${fd.car_brand} ${fd.car_model} (${fd.fuel_type})\nYear: ${fd.purchase_year||'--'} | ODO: ${fd.odometer||'--'} km\n📝 ${fd.notes||'No notes'}\n⏰ ${new Date().toLocaleString('en-IN',{timeZone:'Asia/Kolkata'})}`;
+            // WhatsApp message WITH file links
+            const msg = `🚗 *New Bill Review — CarBillHelper*
+
+📋 *Ref:* ${refId}
+👤 *Name:* ${name}
+📞 *WhatsApp:* ${whatsapp}
+💳 *Plan:* ${plan}
+🚙 *Car:* ${fd.car_brand} ${fd.car_model} (${fd.fuel_type})
+📅 *Year:* ${fd.purchase_year || '--'} | 🛣️ *ODO:* ${fd.odometer || '--'} km
+📝 *Notes:* ${fd.notes || 'None'}
+
+${fileLinksForWA}
+
+⏰ ${new Date().toLocaleString('en-IN', {timeZone:'Asia/Kolkata'})}`;
+
             window.open(`https://wa.me/917987481336?text=${encodeURIComponent(msg)}`, '_blank');
 
             // Show success
+            document.getElementById('uploadProgress').style.display = 'none';
             const sm = document.getElementById('successMessage');
             document.getElementById('refId').textContent = refId;
             sm.classList.add('show');
             sm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            // Show uploaded file links below upload box
+            document.getElementById('uploadedFiles').innerHTML = uploadedFileLinks.map(f =>
+                `<div style="font-size:12px;color:var(--success);margin-top:4px;">✅ ${f.name} — uploaded</div>`
+            ).join('');
 
             setTimeout(() => {
                 this.reset();
                 uploadBox.innerHTML = `<div class="upload-icon">📄</div><p><strong>Click to upload</strong> your service estimate</p><p style="font-size:0.9rem;margin-top:0.5rem;">Supports: JPG, PNG, PDF (Max 10MB)</p>`;
                 document.getElementById('carModel').innerHTML = '<option value="">First select a brand</option>';
                 document.getElementById('fuelType').innerHTML = '<option value="">First select a model</option>';
+                document.getElementById('uploadedFiles').innerHTML = '';
+                uploadedFileLinks = [];
                 submitButton.disabled = false;
                 submitButton.innerHTML = 'Get Free Analysis Now';
                 sm.classList.remove('show');
-            }, 5000);
+            }, 6000);
         });
 
         // ── Insurance Calculator ──
