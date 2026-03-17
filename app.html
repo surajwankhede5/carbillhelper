@@ -541,7 +541,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       </select>
     </div>
     <button class="btn btn-gold btn-full" onclick="saveCar()">💾 Save Car</button>
-    <button class="btn btn-outline btn-full" style="margin-top:8px;" onclick="closeSheet('addCarSheet')">Cancel</button>
+    <button class="btn btn-outline btn-full" style="margin-top:8px;" onclick="closeSheet('addCarSheet');document.querySelector('#addCarSheet .btn-gold').onclick=saveCar;document.querySelector('#addCarSheet .sheet-title').textContent='🚗 ADD CAR';">Cancel</button>
   </div>
 </div>
 
@@ -715,7 +715,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 </div>
 
 <!-- Car Modal -->
-<div class="modal-overlay" id="carModal" onclick="if(event.target===this)closeCarModal()">
+<div class="modal-overlay" id="carModal" onclick="closeCarModal()">
   <div class="modal-box">
     <div class="modal-title">🚗 SELECT CAR</div>
     <div id="carModalList"></div>
@@ -1152,20 +1152,81 @@ function renderCarsList(){
 }
 
 function deleteCar(id){
-  if(!confirm('Delete this car and all its data?')) return;
+  if(!confirm('Delete this car and all its data? This cannot be undone.')) return;
   let cars = getCars().filter(c=>c.id!==id);
-  DB.set('cars',cars);
+  DB.set('cars', cars);
+  // Delete all car-specific data
+  ['services','documents','warranties'].forEach(key=>{
+    localStorage.removeItem(`cbh_car_${id}_${key}`);
+  });
+  localStorage.removeItem(`cbh_car_${id}_parts`);
   if(activeCar===id){
     activeCar = cars.length ? cars[0].id : null;
     DB.set('activeCar', activeCar);
   }
-  toast('🗑️ Car deleted');
+  toast('🗑️ Car and all data deleted');
   updateTopbar();
   renderAll();
 }
 
 function editCar(id){
-  toast('Edit feature coming soon!');
+  const cars = getCars();
+  const car = cars.find(c=>c.id===id);
+  if(!car) return;
+  // Populate the add car sheet with existing data for editing
+  populateBrandsIfNeeded();
+  setTimeout(()=>{
+    document.getElementById('newCarBrand').value = car.brand||'';
+    updateModels();
+    setTimeout(()=>{
+      document.getElementById('newCarModel').value = car.model||'';
+      updateVariants();
+      setTimeout(()=>{
+        document.getElementById('newCarVariant').value = car.variant||'';
+        document.getElementById('newCarFuel').value = car.fuel||'';
+        document.getElementById('newCarYear').value = car.year||'';
+        document.getElementById('newCarReg').value = car.reg||'';
+        document.getElementById('newCarKm').value = car.km||'';
+        document.getElementById('newCarPurchase').value = car.purchase||'';
+        document.getElementById('newCarOwner').value = car.owner||'';
+        document.getElementById('newCarPhone').value = car.phone||'';
+        document.getElementById('newCarColor').value = car.color||'';
+      },100);
+    },100);
+  },100);
+  // Override saveCar to update instead of add
+  document.querySelector('#addCarSheet .btn-gold').onclick = function(){
+    const brand = document.getElementById('newCarBrand').value;
+    const model = document.getElementById('newCarModel').value;
+    const fuel = document.getElementById('newCarFuel').value;
+    if(!brand||!model){toast('⚠️ Select Brand and Model');return;}
+    if(!fuel){toast('⚠️ Select Fuel Type');return;}
+    const idx = cars.findIndex(c=>c.id===id);
+    if(idx>=0){
+      cars[idx] = {...cars[idx],
+        brand, model,
+        variant: document.getElementById('newCarVariant').value,
+        fuel,
+        year: document.getElementById('newCarYear').value,
+        reg: document.getElementById('newCarReg').value.toUpperCase(),
+        km: parseInt(document.getElementById('newCarKm').value)||cars[idx].km||0,
+        purchase: document.getElementById('newCarPurchase').value,
+        owner: document.getElementById('newCarOwner').value,
+        phone: document.getElementById('newCarPhone').value,
+        color: document.getElementById('newCarColor').value,
+      };
+      DB.set('cars', cars);
+    }
+    closeSheet('addCarSheet');
+    // Restore saveCar button
+    document.querySelector('#addCarSheet .btn-gold').onclick = saveCar;
+    clearAddCarForm();
+    toast('✅ Car updated!');
+    updateTopbar();
+    renderAll();
+  };
+  document.getElementById('addCarSheet').querySelector('.sheet-title').textContent = '✏️ EDIT CAR';
+  openSheet('addCarSheet');
 }
 
 // Car Modal
@@ -1186,14 +1247,14 @@ function openCarModal(){
   `).join('');
   document.getElementById('carModal').classList.add('open');
 }
-function closeCarModal(){ document.getElementById('carModal').classList.remove('open'); }
+function closeCarModal(e){ if(!e||e.target===document.getElementById('carModal')||!e.target.closest('.modal-box')) document.getElementById('carModal').classList.remove('open'); }
 
 // ════════════════════════════════════════
 // TAB NAVIGATION
 // ════════════════════════════════════════
 const PAGE_TITLES = {
   dashboard:'Dashboard',cars:'My Cars',service:'Service History',
-  tools:'Smart Tools',parts:'Parts & Warranty',docs:'Docs & Insurance',ai:'AI Assistant'
+  tools:'Smart Tools',parts:'Parts & Warranty',docs:'Docs & Insurance',ai:'AI Assistant 🤖'
 };
 function showTab(tab){
   currentTab=tab;
@@ -1202,12 +1263,14 @@ function showTab(tab){
   const pg=document.getElementById('tab-'+tab);if(pg)pg.classList.add('active');
   const nt=document.querySelector(`.nav-tab[data-tab="${tab}"]`);if(nt)nt.classList.add('active');
   document.getElementById('pageSubtitle').textContent=PAGE_TITLES[tab]||tab;
-  document.getElementById('mainContent').scrollTop=0;
+  if(tab!=='ai') document.getElementById('mainContent').scrollTop=0;
+  if(tab==='ai'){const chat=document.getElementById('aiChat');if(chat)setTimeout(()=>chat.scrollTop=chat.scrollHeight,100);}
   const fab=document.getElementById('fab');
   if(tab==='service'){fab.classList.remove('hidden');fab.title='Add Service';}
   else if(tab==='parts'){fab.classList.remove('hidden');fab.title='Update Part';}
   else if(tab==='docs'){fab.classList.remove('hidden');fab.title='Add Document';}
   else fab.classList.add('hidden');
+  if(tab==='ai'){document.getElementById('mainContent').style.display='flex';document.getElementById('mainContent').style.flexDirection='column';}
   renderTab(tab);
 }
 function fabAction(){
@@ -1221,6 +1284,7 @@ function renderTab(tab){
   else if(tab==='service') renderService();
   else if(tab==='parts') renderParts();
   else if(tab==='docs') renderDocs();
+  // 'ai' tab needs no render — static
 }
 function renderAll(){ renderTab(currentTab); }
 
@@ -1376,12 +1440,25 @@ function saveService(){
     if(idx>=0){cars[idx].km=svc.km;DB.set('cars',cars);}
   }
   closeSheet('addSvcSheet');
-  clearForm(['svcGarage','svcWork','svcBill','svcNotes','svcKm','svcNextKm']);
+  clearForm(['svcGarage','svcWork','svcBill','svcNotes']);
+  document.getElementById('svcKm').value='';
+  document.getElementById('svcNextKm').value='';
   renderService();
   renderDashboard();
+  renderParts();
   toast('✅ Service saved!');
 }
 
+function deleteService(id){
+  const car = getActiveCar();
+  if(!car) return;
+  if(!confirm('Delete this service record?')) return;
+  const svcs = getCarData(car.id,'services').filter(s=>s.id!==id);
+  setCarData(car.id,'services',svcs);
+  renderService();
+  renderDashboard();
+  toast('🗑️ Service record deleted');
+}
 function renderService(){
   const car=getActiveCar();
   if(!car){document.getElementById('serviceList').innerHTML='<div class="empty-state"><div class="empty-icon">🚗</div><p>Add a car first</p></div>';return;}
@@ -1400,6 +1477,7 @@ function renderService(){
       ${s.nextKm?`<div class="tl-meta">Next: ${fmt(s.nextKm)} km</div>`:''}
       ${s.notes?`<div class="tl-meta" style="margin-top:4px;font-style:italic;">"${s.notes}"</div>`:''}
       <span class="tag" style="background:${typeColors[s.type]||'var(--bg4)'}22;color:${typeColors[s.type]||'var(--text3)'};margin-top:6px;display:inline-block;">${s.type||'general'}</span>
+      <button class="btn btn-danger btn-sm" style="float:right;margin-top:4px;padding:2px 8px;font-size:10px;" onclick="deleteService('${s.id}')">🗑️</button>
     </div></div>`).join('')}</div>`
   :'<div class="empty-state"><div class="empty-icon">🔧</div><p>No service records yet</p></div>';
 }
@@ -1438,7 +1516,7 @@ function renderParts(){
     const pct=d?Math.min(100,Math.round(((km-d.km)/i)*100)):null;
     const statusColor=pct===null?'var(--text3)':pct>=100?'var(--red)':pct>=75?'var(--orange)':'var(--green)';
     const statusText=pct===null?'Not recorded':pct>=100?'OVERDUE':pct>=75?'Due soon':`${100-pct}% remaining`;
-    return `<div class="card" style="padding:12px;margin-bottom:8px;" onclick="openSheet('updatePartSheet');document.getElementById('partName').value='${p}'">
+    return `<div class="card" style="padding:12px;margin-bottom:8px;cursor:pointer;" data-part="${p}" onclick="selectPart(this)">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
         <div style="display:flex;align-items:center;gap:8px;">
           <span style="font-size:20px;">${PARTS_ICONS[p]||'⚙️'}</span>
@@ -1491,6 +1569,14 @@ function saveWarranty(){
   toast('✅ Warranty saved!');
 }
 
+function deleteWarranty(id){
+  const car = getActiveCar();
+  if(!car) return;
+  const list = getCarData(car.id,'warranties').filter(w=>w.id!==id);
+  setCarData(car.id,'warranties',list);
+  renderWarranties();
+  toast('🗑️ Warranty deleted');
+}
 function renderWarranties(){
   const car=getActiveCar();
   const div=document.getElementById('warrantyList');
@@ -1512,6 +1598,7 @@ function renderWarranties(){
       <div class="warranty-status">
         <span class="tag" style="background:${status.color}22;color:${status.color};">${status.label}</span>
         ${w.cost?`<div style="font-size:10px;color:var(--text3);margin-top:4px;">₹${fmt(w.cost)}</div>`:''}
+        <button class="btn btn-danger btn-sm" style="margin-top:6px;padding:3px 8px;font-size:10px;" onclick="deleteWarranty('${w.id}')">Delete</button>
       </div>
     </div>`;
   }).join('');
@@ -1566,6 +1653,15 @@ function saveDocument(){
   toast('✅ Document saved!');
 }
 
+function deleteDoc(id){
+  const car = getActiveCar();
+  if(!car) return;
+  const docs = getCarData(car.id,'documents').filter(d=>d.id!==id);
+  setCarData(car.id,'documents',docs);
+  renderDocs();
+  renderDashboard();
+  toast('🗑️ Document deleted');
+}
 function renderDocs(){
   const car=getActiveCar();
   if(!car){
@@ -1626,7 +1722,7 @@ function renderDocs(){
           <div style="font-size:13px;font-weight:600;">${d.name}</div>
           <div style="font-size:11px;color:var(--text3);">${d.type} ${d.number?'· '+d.number:''} ${d.expiry?'· Exp: '+fmtDate(d.expiry):''}</div>
         </div>
-        <div>${statusTag}</div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">${statusTag}<button class="btn btn-danger btn-sm" style="padding:2px 8px;font-size:10px;" onclick="deleteDoc('${d.id}')">🗑️</button></div>
       </div>
     </div>`;
   }).join(''):'<div class="empty-state"><div class="empty-icon">📁</div><p>No documents added</p></div>';
@@ -1792,68 +1888,523 @@ function generateAdvisory(){
 // ════════════════════════════════════════
 // AI ASSISTANT
 // ════════════════════════════════════════
-const AI_RESPONSES = {
-  'oil change': 'Engine oil should be changed every 8,000-10,000 km for most Indian cars. Cost: ₹800-2,000 depending on oil type (mineral/semi-synthetic/synthetic) and car model. Always replace the oil filter too — it costs only ₹200-400 but is critical.',
-  'service cost': 'General service (oil change + filters) costs ₹1,500-3,500 for most Indian cars. Major service every 40,000 km can cost ₹5,000-15,000. Always get an itemized estimate BEFORE approving any work.',
-  'insurance': 'Key things to check: IDV (Insured Declared Value) — make sure it matches market value. Zero Dep add-on — highly recommended, adds 10-15% to premium but covers 100% of parts cost. Engine Protection — must-have in flood-prone areas. Buy online to save 30-40% vs dealer.',
-  'engine flush': 'Engine flush is almost always unnecessary and often oversold. Modern oils clean the engine during regular changes. Unless your car has serious sludge issues (very old oil not changed for years), skip it. Save ₹500-800.',
-  'tyre pressure': 'Check tyre pressure every 2-4 weeks. Most Indian cars: 32-35 PSI front, 30-33 PSI rear. Correct pressure improves fuel efficiency by 3-5% and extends tyre life significantly. Check when tyres are cold (not driven for 3+ hours).',
-  'brake': 'Brake pads last 40,000-60,000 km typically. Signs they need replacement: squealing sound, vibration when braking, car pulling to one side, or brake pedal feels soft. Never delay brake work — it is a safety item.',
-  'battery': 'Car batteries typically last 3-5 years. Signs of weak battery: slow cranking, dashboard warning light, electrical issues. Get a load test done (free at most battery shops) before replacing. Cost: ₹3,000-6,000 for a good battery.',
-  'ac': 'AC not cooling? Most likely causes: 1) Low refrigerant gas — ₹800-1,500 to refill. 2) Dirty cabin filter — ₹200-400 to replace. 3) Compressor issue — more expensive. Get gas level checked first.',
-  'fuel efficiency': 'Tips to improve mileage: 1) Keep tyres properly inflated. 2) Change air filter regularly. 3) Clean/replace spark plugs. 4) Smooth driving — avoid hard acceleration. 5) Use correct engine oil grade. 6) Keep AC use minimal in city.',
-  'overcharge': 'If you suspect overcharging: 1) Always get an itemized bill. 2) Compare with manufacturer service schedule (available in owner manual). 3) Get quotes from 2-3 garages. 4) Use CarBillHelper\'s bill analysis tool to check each item.',
-  'ncb': 'NCB (No Claim Bonus) is a discount on renewal premium for claim-free years. It starts at 20% after 1 year and goes up to 50% after 5 claim-free years. NCB is tied to YOU, not the car — it transfers when you buy a new car. Never make small claims that would cost you NCB discount.',
-  'idv': 'IDV (Insured Declared Value) is the maximum amount your insurer pays on total loss or theft. It should match the current market value of your car. Dealers often set low IDV to show cheaper premium — but this means less money on claim. Always verify and set IDV correctly.',
-  'parts': 'For genuine vs aftermarket parts: 1) Genuine OEM parts have warranty and perfect fit. 2) Good aftermarket brands (Bosch, Minda, Mahle) are often 30-50% cheaper with similar quality. 3) For safety parts (brakes, steering), always prefer OEM or reputed brands. 4) Always ask for the replaced parts back.',
-  'warranty': 'Car warranty: Most new cars have 2-3 year or 40,000-60,000 km warranty. Extended warranty available for 1-2 more years. Parts have separate warranty — batteries (18-36 months), tyres (don\'t have fixed warranty, check for manufacturing defects). Keep all bills and invoices!',
-  'default': 'I can help you with car service costs, bill analysis, insurance queries, parts maintenance, and money-saving tips. Try asking about: oil change, service cost, insurance IDV, engine flush, tyre pressure, battery, AC issues, or fuel efficiency!'
-};
+// ════════════════════════════════════════════════════════
+// CARBILLHELPER AI — COMPREHENSIVE INDIAN AUTOMOTIVE KB
+// Covers: All fuel types, all problems, insurance, laws
+// Languages: Hindi + Hinglish + English
+// ════════════════════════════════════════════════════════
 
 function getAIResponse(msg){
-  const lower = msg.toLowerCase();
-  for(const [key,response] of Object.entries(AI_RESPONSES)){
-    if(key!=='default'&&lower.includes(key)) return response;
+  const car = getActiveCar();
+  const raw = msg;
+  const lower = msg.toLowerCase().replace(/[।,!?।]/g,' ').replace(/\s+/g,' ').trim();
+  const has = (...words) => words.some(w => lower.includes(w));
+  const hasAll = (...words) => words.every(w => lower.includes(w));
+
+  // Car context
+  const carName = car ? `${car.brand} ${car.model}` : null;
+  const carFuel = car ? (car.fuel||'').toLowerCase() : '';
+  const carKm = car ? (car.km||0) : 0;
+  const svcs = car ? getCarData(car.id,'services') : [];
+  const docs = car ? getCarData(car.id,'documents') : [];
+  const lastSvc = svcs.length ? [...svcs].sort((a,b)=>new Date(b.date)-new Date(a.date))[0] : null;
+  const insDoc = docs.find(d=>d.type==='Insurance');
+
+  // ══════════════════════════════════════
+  // GREETINGS & GENERAL
+  // ══════════════════════════════════════
+  if(has('hello','hi ','hii','helo','hey ','namaste','namaskar','sat sri','jai hind','good morning','good evening','good afternoon','subah','shubh')) {
+    if(car) return `👋 **Namaste!** Your ${carName} (${car.fuel}, ${fmt(carKm)} km) is all set.\nKya jaanna chahte ho? Service, insurance, problems, ya traffic laws — sab pooch sakte ho!`;
+    return `👋 **Namaste!** CarBillHelper AI mein aapka swagat hai!\nMain aapko car service, insurance, traffic laws, aur sabhi car problems ke baare mein bataunga.\nPehle apni car add karo "My Cars" tab mein, phir personalized advice milegi! 🚗`;
   }
-  // Context-aware with car data
-  const car=getActiveCar();
-  if(lower.includes('my car')&&car) return `Your active car is ${car.brand} ${car.model} (${car.year}, ${car.fuel}). ${car.km?'Current KM: '+fmt(car.km)+'. ':''}${AI_RESPONSES.default}`;
-  if(lower.includes('next service')&&car){
-    const svcs=getCarData(car.id,'services');
-    if(svcs.length){
-      const last=[...svcs].sort((a,b)=>new Date(b.date)-new Date(a.date))[0];
-      const nextKm=(last.nextKm||(last.km+10000));
-      return `Your ${car.brand} ${car.model}'s last service was at ${fmt(last.km)} km on ${fmtDate(last.date)}. Next service is due at ${fmt(nextKm)} km. ${car.km&&nextKm>car.km?'You have '+(nextKm-car.km).toLocaleString()+' km remaining.':''}`;
+
+  if(has('thank','shukriya','dhanyawad','thanks','thx','aabhar')) return `😊 **Shukriya!** Koi aur sawaal ho toh zaroor poochho. Hum hamesha yahan hain! 🚗`;
+
+  if(has('thik hai','theek hai','okay','ok ','achha','acha','samajh','got it','understood','han ','haan','yes ','bilkul','sure')) {
+    return `✅ **Bilkul!** Koi aur sawaal ho — service, insurance, traffic rules, ya car problem — poochho! 💬`;
+  }
+
+  if(has('bye','alvida','phir milenge','take care','band karo')) return `👋 **Alvida!** Apni car ka khayal rakhna. Kisi bhi problem mein wapas aana! 🚗`;
+
+  // ══════════════════════════════════════
+  // MY CAR INFO
+  // ══════════════════════════════════════
+  if(has('meri car','mera car','meri gaadi','mera vehicle','my car','apni car','car info','car detail') && car) {
+    let r = `🚗 **${carName}** (Active Car)\n`;
+    if(car.variant) r += `Variant: ${car.variant}\n`;
+    r += `Year: ${car.year||'--'} | Fuel: ${car.fuel||'--'} | KM: ${fmt(carKm)}\n`;
+    if(car.reg) r += `Reg No: ${car.reg}\n`;
+    if(car.color) r += `Color: ${car.color}\n`;
+    if(lastSvc) r += `\n🔧 Last Service: ${fmtDate(lastSvc.date)} at ${fmt(lastSvc.km)} km (₹${fmt(lastSvc.bill)})`;
+    if(insDoc) {
+      const days = insDoc.expiry ? daysFromNow(insDoc.expiry) : null;
+      r += `\n🛡️ Insurance: ${days===null?'--':days<0?'EXPIRED!':days+' days remaining'}`;
+    }
+    return r;
+  }
+
+  // ══════════════════════════════════════
+  // NEXT SERVICE
+  // ══════════════════════════════════════
+  if(has('next service','agli service','kab service','service kab','service due','service reminder') && car) {
+    if(lastSvc){
+      const nextKm = lastSvc.nextKm || (lastSvc.km + 10000);
+      const kmLeft = nextKm - carKm;
+      return `🔧 **Next Service for ${carName}:**\nLast service: ${fmtDate(lastSvc.date)} at ${fmt(lastSvc.km)} km\n**Next due at: ${fmt(nextKm)} km**\n${kmLeft>0?`✅ ${fmt(kmLeft)} km remaining`:'⚠️ **Service overdue! Book immediately.**'}\n\n💡 Tip: Don't delay — timely service extends engine life significantly!`;
+    }
+    return `🔧 Add your service history in the **Service tab** and I'll track your next service date automatically!`;
+  }
+
+  // ══════════════════════════════════════
+  // ⛽ PETROL CAR PROBLEMS & SERVICE
+  // ══════════════════════════════════════
+  if(has('petrol') || (car && carFuel.includes('petrol'))) {
+
+    if(has('service','servic','oil','maintenance','schedule')) {
+      return `⛽ **Petrol Car Service Schedule:**\n\n🔴 **Every 10,000 km:**\n• Engine oil change (5W-30 or 10W-30)\n• Oil filter replacement\n• Air filter inspection\n• Check all fluid levels\n\n🟡 **Every 20,000 km:**\n• Air filter replacement\n• Fuel filter check\n• Check ignition system\n\n🟡 **Every 40,000 km:**\n• Spark plug replacement\n• Brake pad inspection\n• Transmission fluid check\n• Coolant level check\n\n🔴 **Every 60,000 km:**\n• Transmission fluid change\n• Brake fluid change\n• Timing belt inspection\n\n🔴 **Every 80,000 km:**\n• Timing belt replacement (CRITICAL!)\n• Coolant flush\n\n💰 General service cost: ₹1,500–4,000\nMajor service: ₹6,000–15,000`;
+    }
+
+    if(has('mileage','milage','average','kitna deta','fuel efficiency')) {
+      return `⛽ **Petrol Mileage Tips:**\n\n🟢 **Improve mileage by 15–20%:**\n1. Correct tyre pressure (32–35 PSI) → +5%\n2. Fresh air filter → +5%\n3. Good spark plugs → +3%\n4. Correct oil grade → +2%\n5. Smooth driving (avoid sudden acceleration) → +10%\n6. Minimize AC in city traffic → +10%\n7. Remove roof carrier/extra weight\n8. Engine tune-up\n\n💡 **Petrol vs claimed mileage:** Real-world mileage is typically 20–30% less than ARAI figures in Indian city conditions.`;
+    }
+
+    if(has('start nahi','start nhi','crank','starting problem','chalu nahi')) {
+      return `⛽ **Petrol Car Not Starting:**\n\n🔍 **Check in this order:**\n1. **Fuel level** — Check gauge (sounds obvious but...)\n2. **Battery** — Dim lights = weak battery → ₹3,000–5,500\n3. **Spark plugs** — Fouled plugs → ₹800–1,500 for set\n4. **Fuel pump** — No fuel reaching engine → ₹3,000–8,000\n5. **Ignition switch** — Click but no start\n6. **Immobilizer** — Key not recognized → Dealer needed\n\n🚨 **If engine cranks but won't fire:** Likely spark plugs, fuel pump, or injectors\n🚨 **If nothing happens:** Battery or starter motor`;
     }
   }
-  return AI_RESPONSES.default;
+
+  // ══════════════════════════════════════
+  // ⛽ DIESEL CAR — COMPREHENSIVE
+  // ══════════════════════════════════════
+  if(has('diesel') || (car && carFuel.includes('diesel'))) {
+
+    if(has('service','servic','oil','maintenance','schedule')) {
+      return `🛢️ **Diesel Car Service Schedule:**\n\n🔴 **Every 10,000 km (or 1 year):**\n• Engine oil change (15W-40 or 5W-40 per spec)\n• Oil filter replacement\n• Air filter inspection\n• Check all fluids\n\n🔴 **Every 15,000–20,000 km:**\n• Fuel filter replacement (**critical for diesel!**)\n• Air filter replacement\n\n🟡 **Every 40,000 km:**\n• Coolant level check\n• Brake pad inspection\n• Clutch inspection (manual)\n\n🔴 **Every 60,000 km:**\n• Transmission fluid change\n• Brake fluid change\n• Injector cleaning (if symptoms present)\n\n⚠️ **Diesel-specific:** Fuel filter is MOST IMPORTANT — dirty fuel can destroy injectors (₹20,000–50,000 repair)!\n\n💰 General service: ₹2,000–5,000\nMajor service: ₹8,000–18,000`;
+    }
+
+    if(has('dpf','dpf clog','black smoke','kala dhua','smoke')) {
+      return `🛢️ **Diesel DPF (Diesel Particulate Filter) Issues:**\n\n**Black smoke causes:**\n• Clogged air filter → Clean/replace\n• Faulty injectors → ₹5,000–15,000 per injector\n• EGR valve stuck → ₹3,000–8,000\n• Turbo issue → ₹15,000–40,000\n\n**DPF issues (BS6 diesel cars):**\n• DPF regeneration needed — drive at 70+ kmph for 30 min\n• DPF clogged → Professional cleaning ₹5,000–10,000\n• Never ignore DPF warning light!\n\n⚠️ **Warning:** Modern diesel cars (BS6) need highway driving occasionally to keep DPF clean!`;
+    }
+
+    if(has('injector','injection','fuel injector')) {
+      return `🛢️ **Diesel Injectors:**\n\nSigns of injector problems:\n• Rough idle, engine vibration\n• Excessive black smoke\n• Poor mileage (sudden drop)\n• Hard starting\n• Engine misfiring\n\n💰 **Injector repair/replacement:**\n• Injector cleaning: ₹500–1,000 per injector\n• Single injector replacement: ₹8,000–20,000\n• Full set (4 injectors): ₹30,000–80,000\n\n⚠️ **Prevention:** Use quality diesel fuel, change fuel filter on time!\n💡 Don't fill cheap roadside diesel — saves ₹5 but risks ₹50,000+ repair!`;
+    }
+
+    if(has('turbo','turbocharger','boost','lag')) {
+      return `🔧 **Turbocharger Issues (Diesel):**\n\nSigns of turbo problems:\n• Loss of power/acceleration\n• Blue/white smoke from exhaust\n• Loud whining/rattling sound\n• Excessive oil consumption\n\n💰 **Repair costs:**\n• Turbo reconditioning: ₹8,000–15,000\n• New turbo replacement: ₹20,000–50,000\n\n⚠️ **Prevention:**\n• Never switch off immediately after hard driving — let engine idle 2 min\n• Use quality engine oil (turbo cars need better oil)\n• Change oil on time — most turbo failures = oil starvation!`;
+    }
+
+    if(has('glow plug','cold start','winter start','thandi mein')) {
+      return `🛢️ **Diesel Cold Start & Glow Plugs:**\n\nGlow plugs heat the combustion chamber for cold start.\n\nSigns of faulty glow plug:\n• Hard starting in morning/cold weather\n• White smoke on startup\n• Rough running when cold\n\n💰 **Glow plug replacement:**\n• Single plug: ₹300–800\n• Full set (4): ₹1,500–3,500 + labour\n\n💡 In cold weather: Turn key to ON, wait for glow plug light to go off, THEN crank!`;
+    }
+
+    if(has('mileage','milage','average','kitna deta')) {
+      return `🛢️ **Diesel Mileage Tips:**\n\n🟢 **Maintain good mileage:**\n1. Change fuel filter on schedule (every 15,000–20,000 km)\n2. Keep air filter clean\n3. Use good quality diesel (avoid adulterated fuel)\n4. Maintain tyre pressure\n5. Warm up engine for 30–60 seconds before driving\n6. Don't over-rev — diesel has maximum torque at low RPM\n7. Highway driving improves mileage significantly\n\n⚠️ **Diesel is economical when:** You drive 2,000+ km/month\nBelow that, petrol/CNG is usually cheaper overall!`;
+    }
+  }
+
+  // ══════════════════════════════════════
+  // 🟩 CNG CAR — COMPREHENSIVE
+  // ══════════════════════════════════════
+  if(has('cng','compressed natural gas','gas') || (car && carFuel.includes('cng'))) {
+
+    if(has('service','servic','maintenance','schedule','kit')) {
+      return `🟩 **CNG Car Service Schedule:**\n\n🔴 **Every 5,000–8,000 km:**\n• Engine oil change (use CNG-specific oil or semi-synthetic)\n• Oil filter replacement\n• CNG kit check by authorized technician\n\n🟡 **Every 10,000 km:**\n• Air filter inspection\n• Spark plug check (CNG needs NGK iridium — burns hotter)\n• CNG pressure regulator inspection\n\n🔴 **Every 20,000 km:**\n• Spark plug replacement (mandatory for CNG)\n• CNG filter replacement\n• CNG kit calibration\n\n⚠️ **CRITICAL — CNG Cylinder:**\n• **Fitness test every 3 years** (mandatory by law)\n• **Replace cylinder after 15 years** (no exceptions!)\n• Carry original CNG cylinder certificate\n\n💰 General service: ₹2,000–3,500\nCNG specific: +₹500–1,000 extra per service`;
+    }
+
+    if(has('spark plug','spark','misfire','rough idle','ruk ruk')) {
+      return `🟩 **CNG Spark Plugs — Very Important!**\n\nCNG burns hotter than petrol → Regular spark plugs wear faster!\n\n✅ **Use for CNG cars:**\n• NGK Iridium (best for CNG)\n• Bosch Super 4\n• Denso Iridium\n\n❌ **Never use standard plugs for CNG!**\n\n💰 CNG spark plugs: ₹300–600 each (set of 4 = ₹1,200–2,500)\nChange every 15,000–20,000 km!\n\nIgnoring spark plugs = Poor mileage + rough idle + starting problems`;
+    }
+
+    if(has('cylinder','tank','fitness','test','certificate','expiry')) {
+      return `🟩 **CNG Cylinder Rules (MANDATORY):**\n\n📋 **Legal Requirements:**\n• **Fitness test every 3 years** — must be done at authorized testing station\n• **15-year cylinder life** — after that MUST replace (no exceptions, extremely dangerous)\n• Original test certificate must be in car\n\n💰 **Costs:**\n• Cylinder fitness test: ₹500–800\n• New CNG cylinder: ₹8,000–15,000\n\n⚠️ **Fine for expired certificate:** ₹2,000+ and vehicle seizure\n🚨 **Expired/old cylinder = explosion risk!** Don't ignore this!`;
+    }
+
+    if(has('mileage','milage','average','kitna deta','efficiency')) {
+      return `🟩 **CNG Mileage Facts:**\n\nTypical CNG mileage (km per kg):\n• Maruti Alto/WagonR: 28–35 km/kg\n• Maruti Swift/Dzire: 25–32 km/kg\n• Hyundai i20 CNG: 24–29 km/kg\n• Tata Tiago CNG: 25–32 km/kg\n\n💰 **Cost comparison (daily 40 km driving):**\n• Petrol (₹103/L, 18 kmpl): ₹230/day\n• CNG (₹70/kg, 30 km/kg): ₹93/day\n• **Monthly savings: ₹4,000–5,000!**\n\n🟢 **Tips for better CNG mileage:**\n• Maintain CNG kit (calibration every 15,000 km)\n• Fresh spark plugs (iridium)\n• Correct tyre pressure\n• Start on petrol, switch to CNG after engine warms (2–3 min)`;
+    }
+
+    if(has('kit','aftermarket','factory fitted','oem','retro')) {
+      return `🟩 **CNG Kit — Factory vs Aftermarket:**\n\n**Factory Fitted (OEM) CNG:**\n✅ Company warranty\n✅ Better performance & mileage\n✅ No insurance issues\n✅ RC endorsement done\n💰 ₹80,000–1,00,000 extra on car price\n\n**Aftermarket CNG Kit:**\n⚠️ Must have RTO approval (Form 22/20)\n⚠️ RC must be endorsed with CNG\n⚠️ Insurance must mention CNG\n💰 ₹15,000–30,000 installation\n\n⚠️ **Legal requirement:** If CNG not mentioned in RC, your insurance INVALID in accident!\n📋 Documents needed: Kit certificate, RTO endorsement, insurance update`;
+    }
+
+    if(has('filling','bharo','station','pump')) {
+      return `🟩 **CNG Filling Tips:**\n\n✅ **Best practices:**\n• Never fill during peak hours (pressure inconsistent)\n• Fill in early morning (cooler temperature = better fill)\n• Don't top up cylinder to 100% always — leave 10% for expansion\n• Use authorized CGL/MGL/IGL/GAIL stations\n\n⚠️ **Safety:**\n• Engine MUST be off while filling\n• Don't use mobile phone at CNG station\n• If smell of gas — move away immediately, don't start car`;
+    }
+  }
+
+  // ══════════════════════════════════════
+  // 🔋 ELECTRIC VEHICLE (EV)
+  // ══════════════════════════════════════
+  if(has('electric','ev','battery','charging','charge','bijli','tata nexon ev','tigor ev','punch ev','mg zs','mg windsor','ola','ather','byd') || (car && carFuel.includes('electric'))) {
+
+    if(has('service','servic','maintenance','schedule')) {
+      return `🔋 **Electric Vehicle Service:**\n\nGreat news — EVs need MUCH less maintenance!\n\n🟢 **Every 10,000 km or 1 year:**\n• Rotate tyres\n• Brake fluid check (regenerative braking = less brake wear)\n• Check battery cooling system\n• Update software (many brands do OTA)\n• Check 12V auxiliary battery\n\n🟡 **Every 20,000 km:**\n• Brake pad inspection\n• Coolant check (for battery thermal management)\n• High voltage cable inspection\n\n✅ **No need:**\n• No engine oil\n• No spark plugs\n• No fuel filter\n• No timing belt\n• No clutch (usually)\n\n💰 Annual EV service cost: ₹3,000–8,000 (vs ₹8,000–20,000 for ICE)`;
+    }
+
+    if(has('battery','range','anxiety','km','charging time','fast charge','slow charge')) {
+      return `🔋 **EV Battery & Range Guide:**\n\n**Battery tips to extend life:**\n• Keep charge between 20%–80% for daily use\n• Only charge to 100% before long trips\n• Avoid draining below 10%\n• Use slow charging (AC) for daily use — better for battery\n• Fast charging (DC) max 2–3 times/week\n• Avoid parking in direct sun/extreme heat\n\n**Typical Indian EV ranges (real-world):**\n• Tata Nexon EV (Medium): 180–220 km\n• Tata Nexon EV (Long): 280–320 km\n• Tata Punch EV: 250–300 km\n• MG Windsor: 300–350 km\n• BYD Atto 3: 350–420 km\n\n💰 **Charging cost:**\nHome charging: ₹1.5–2/km\nPublic fast charger: ₹3–5/km (vs petrol ₹5–7/km)`;
+    }
+
+    if(has('insurance','insure')) {
+      return `🔋 **EV Insurance Tips:**\n\n🛡️ **EV-specific coverage:**\n• Battery damage cover — MUST have!\n• Charging equipment theft\n• External charging cable\n• Roadside assistance (EV specialist)\n\n💰 **EV insurance is slightly higher** due to battery replacement cost\n• Battery replacement: ₹3–10 lakh depending on model\n• Ensure battery is covered in comprehensive policy\n\n⚠️ Check if insurer covers:\n• Battery degradation\n• Fire due to battery\n• Charging-related damage\n\n✅ Recommended insurers for EV: Tata AIG, HDFC Ergo, Bajaj Allianz`;
+    }
+
+    if(has('charger','charging','home charge','ac charger','dc charger','fast')) {
+      return `🔋 **EV Charging Guide:**\n\n**Charger types in India:**\n\n**Level 1 (3.3 kW) — Home charging:**\n• Use standard 15A socket\n• 8–12 hours for full charge\n• Cost: ₹15,000–20,000 for wall box\n\n**Level 2 (7.2 kW) — Home/Office:**\n• 3–6 hours for full charge\n• Good for overnight charging\n\n**DC Fast Charger (30–50 kW):**\n• 45 min to 80% charge\n• Available at Tata Power, ChargeZone, EESL stations\n• Cost: ₹10–25 per kWh\n\n💡 **Tip:** Install a 7.2kW AC charger at home — best balance of speed and battery health!`;
+    }
+  }
+
+  // ══════════════════════════════════════
+  // 🔀 HYBRID CARS
+  // ══════════════════════════════════════
+  if(has('hybrid','strong hybrid','mild hybrid','hev','toyota hyryder','grand vitara hybrid','innova hycross','vellfire','camry') || (car && carFuel.includes('hybrid'))) {
+    if(has('service','servic','maintenance')) {
+      return `♻️ **Hybrid Car Service:**\n\n**Petrol engine service (same as regular):**\n• Oil change: 10,000 km\n• Filters, spark plugs etc.\n\n**Hybrid-specific:**\n• Hybrid battery — typically 8–10 year/1,50,000 km warranty (Maruti, Toyota)\n• Coolant for hybrid battery system\n• High voltage system inspection by trained technician ONLY\n\n⚠️ **Never try to work on high-voltage hybrid battery yourself** — risk of electrocution!\n\n💰 Hybrid service: ₹3,000–6,000 (slightly more than regular)\nHybrid battery replacement (after warranty): ₹1–3 lakh (rarely needed)`;
+    }
+  }
+
+  // ══════════════════════════════════════
+  // 🚗 CAR-SPECIFIC PROBLEMS
+  // ══════════════════════════════════════
+
+  // Maruti Suzuki
+  if(has('maruti','swift','wagonr','wagon r','baleno','brezza','vitara brezza','ertiga','dzire','alto','celerio','ignis','fronx','jimny','s-presso','spresso','xl6','grand vitara','ciaz')) {
+    const model = has('swift')?'Swift':has('wagonr','wagon r')?'WagonR':has('baleno')?'Baleno':has('brezza')?'Brezza':has('ertiga')?'Ertiga':has('dzire')?'Dzire':has('alto')?'Alto':has('fronx')?'Fronx':has('jimny')?'Jimny':has('xl6')?'XL6':has('grand vitara')?'Grand Vitara':'Maruti';
+
+    if(has('problem','issue','common','fault','defect','dikkat')) {
+      const problems = {
+        'Swift': '• Gear shift stiffness (common in K-series)\n• AC belt noise\n• Clutch cable wear faster (manual)\n• Paint chipping (edges)',
+        'WagonR': '• AC compressor noise\n• Steering vibration at high speed\n• CNG variant — occasional stalling when switching fuels',
+        'Baleno': '• CVT transmission shudder (on some units)\n• AC cooling inconsistency\n• Infotainment screen lag',
+        'Brezza': '• Turbo lag (1.5L)\n• Some owners report vibration at idle\n• Paddle shift response in AMT',
+        'Ertiga': '• Middle seat comfort\n• CNG range slightly less\n• AC can struggle in peak summer with 7 passengers',
+        'Grand Vitara': '• Hybrid battery cooling in extreme heat\n• Some software glitches\n• Strong hybrid AC takes 2–3 min to cool cabin',
+        'Maruti': '• Paint quality feedback on some variants\n• AC effectiveness in extreme summer'
+      };
+      return `🚗 **Common Maruti ${model} Issues:**\n\n${problems[model]||problems['Maruti']}\n\n✅ **General Maruti positives:** Excellent service network (3,500+ centers), affordable parts, good resale value.\n\n💡 Get itemized service estimate to avoid overcharging — use our Bill Review tool!`;
+    }
+
+    return `🚗 **Maruti ${model} Service Tips:**\n• Oil change: Every 10,000 km (Castrol/Maruti branded)\n• General service cost: ₹2,000–4,500\n• Major service (40k km): ₹6,000–12,000\n• Avoid: Engine flush, Teflon coating, injector cleaning unless needed\n\n✅ 3,500+ service centers across India!\nParts availability: Excellent\nResale value: Best in India`;
+  }
+
+  // Hyundai
+  if(has('hyundai','creta','i20','venue','verna','tucson','alcazar','exter','aura','ioniq','kona')) {
+    const model = has('creta')?'Creta':has('i20')?'i20':has('venue')?'Venue':has('verna')?'Verna':has('alcazar')?'Alcazar':has('exter')?'Exter':'Hyundai';
+
+    if(has('problem','issue','common','fault')) {
+      return `🚗 **Common Hyundai ${model} Issues:**\n\n**General Hyundai issues:**\n• Panoramic sunroof water leakage (older models)\n• DCT transmission jerk (7-speed DCT)\n• Infotainment screen freezing\n• Some users report paint sensitivity\n\n**${model}-specific:**\n${has('creta')?'• Ventilated seat malfunction\n• Sunroof rattle\n• 1.5 Turbo DCT occasional shudder':has('i20')?'• Clutch engagement point (manual)\n• IVT (belt-CVT) smoothness':has('venue')?'• IMT gear shift learning curve\n• Voice command accuracy':'• General electronic gremlins'}\n\n💡 Hyundai has good service network (1,300+ centers). Extended warranty recommended!`;
+    }
+
+    return `🚗 **Hyundai ${model} Service:**\n• Oil change: Every 10,000 km\n• General service: ₹3,000–6,000\n• Major service (40k km): ₹8,000–15,000\n• Service centers: 1,300+ in India\n• Hyundai Blue Link: Use app for service reminders!\n\nCommon upsells to avoid: Paint protection film (overpriced at dealer), Fabric guard`;
+  }
+
+  // Tata Motors
+  if(has('tata','nexon','harrier','safari','punch','altroz','tiago','tigor','curvv')) {
+    const model = has('nexon')?'Nexon':has('harrier')?'Harrier':has('safari')?'Safari':has('punch')?'Punch':has('altroz')?'Altroz':has('tiago')?'Tiago':has('curvv')?'Curvv':'Tata';
+
+    if(has('problem','issue','common','fault','rattle','noise')) {
+      return `🚗 **Tata ${model} Issues:**\n\n**Common across Tata cars:**\n• Cabin rattle (improving in newer models)\n• Some paint quality feedback\n• Infotainment UI can be slow\n\n**${model}-specific:**\n${has('nexon')?'• Omega Arc body = excellent safety\n• Diesel variant AC can struggle in summer\n• Turbo hiss (normal, not a defect)':has('harrier','safari')?'• Diesel engine NVH at idle\n• Terrain modes can confuse first-time users\n• Large turning radius':has('punch')?'• Small fuel tank (37L)\n• Limited diesel variant':has('altroz')?'• Rear seat legroom\n• 1.5 diesel: Great mileage!':'• General build quality improvements ongoing'}\n\n✅ **Tata safety:** Most models rated 5-star GNCAP\n💡 After-sales service improving significantly in recent years!`;
+    }
+
+    return `🚗 **Tata ${model} Service:**\n• Oil change: Every 10,000 km\n• General service: ₹2,500–5,000\n• Major service: ₹7,000–15,000\n• Service centers: 1,500+ across India\n\n✅ **Tata ownership:** Great safety ratings, improving service quality, competitive pricing`;
+  }
+
+  // Honda
+  if(has('honda','city','amaze','elevate','jazz','wrv','wr-v','cr-v','accord','civic')) {
+    if(has('problem','issue','common','fault')) {
+      return `🚗 **Honda Common Issues:**\n\n• Earth Dream diesel engine (older) — known for some issues with diesel particulates\n• CVT transmission — smooth but avoid towing\n• Honda Sensing ADAS — calibration needed after windshield change\n• AC condenser vulnerable (position at front)\n\n✅ **Honda positives:** Engine reliability, excellent resale, quality interior, smooth CVT\n\n💰 Service cost slightly higher than Korean brands but cheaper than European\nService centers: 400+ in India`;
+    }
+    return `🚗 **Honda Service Guide:**\n• Oil change: 10,000 km (Honda genuine 0W-20 for City hybrid)\n• General service: ₹4,000–7,000\n• Major service: ₹10,000–18,000\n• DPF cars: Need highway run occasionally\n✅ Very reliable engines, resale value excellent`;
+  }
+
+  // Kia
+  if(has('kia','seltos','sonet','carens','carnival','ev6','ev9')) {
+    if(has('problem','issue')) {
+      return `🚗 **Kia Common Issues:**\n\n• Sunroof panel gap/water ingress (some batch)\n• ADAS calibration issues in some units\n• Digital cluster occasional lag\n• Sonet: AMT can be jerky in traffic\n\n✅ **Kia positives:** Feature-loaded, good build quality, stylish design, improving service\n💡 Kia service centers now at 650+ locations`;
+    }
+    return `🚗 **Kia Service Tips:**\n• Oil change: 10,000 km\n• General service: ₹3,500–6,500\n• Use Kia ConnectEd app for service reminders\n• Service centers: 650+ in India`;
+  }
+
+  // MG
+  if(has('mg motor','mg hector','mg zs','mg windsor','mg astor','mg gloster')) {
+    return `🚗 **MG Motor Service:**\n\n• Oil change: 10,000 km\n• General service: ₹4,000–7,000\n• iSMART connectivity: Use app for diagnostics\n• Service centers: 600+ in India\n\n⚠️ **Note:** MG is owned by SAIC (China). Some users have concerns about data privacy with connected features.\n✅ Build quality is good, features excellent for price`;
+  }
+
+  // Mahindra
+  if(has('mahindra','xuv700','xuv 700','xuv400','scorpio','thar','bolero','xuv3xo','xuv300','be6','be 6')) {
+    const model = has('xuv700','xuv 700')?'XUV700':has('scorpio')?'Scorpio':has('thar')?'Thar':has('bolero')?'Bolero':has('xuv3xo','xuv300')?'XUV 3XO':'Mahindra';
+
+    if(has('problem','issue','common','fault')) {
+      return `🚗 **Mahindra ${model} Issues:**\n\n${has('xuv700','xuv 700')?'• Software/ADAS glitches (improving with OTA updates)\n• Long waiting period\n• AdrenoX infotainment size issues initially\n• Diesel NVH':has('thar')?'• Open body variant — loud on highways\n• Fuel efficiency not great\n• Limited boot space (5-door better)':has('scorpio')?'• High ground clearance = comfort compromise\n• Older platform base\n• Rear AC vents missing in some variants':'• General Mahindra: Great off-road, diesel reliability'}\n\n✅ **Mahindra positives:** Excellent diesel engines, off-road capability, ground clearance, service network in rural areas`;
+    }
+
+    return `🚗 **Mahindra Service:**\n• mStallion diesel: Highly reliable\n• Service centers: 1,500+ pan-India\n• Rural India service: Best among all brands\n• Oil change: 10,000 km (use 15W-40 for most diesels)`;
+  }
+
+  // ══════════════════════════════════════
+  // 🔧 COMMON PROBLEMS — ALL CARS
+  // ══════════════════════════════════════
+
+  if(has('overheating','engine hot','temperature','gauge','boil','steam','bhap')) {
+    return `🌡️ **Engine Overheating — URGENT!**\n\n🚨 **What to do IMMEDIATELY:**\n1. Turn OFF AC\n2. Turn heater ON (draws heat from engine)\n3. Pull over safely — don't push overheating engine\n4. Turn engine OFF\n5. Wait 30+ minutes before opening bonnet\n6. NEVER open radiator cap when hot — steam burns!\n\n**Causes of overheating:**\n• Low coolant level → Top up with 50:50 water+coolant\n• Coolant leak → Check hoses, radiator, water pump\n• Radiator fan not working → ₹2,000–5,000 repair\n• Thermostat stuck → ₹800–2,000\n• Head gasket blown (serious) → ₹15,000–50,000\n• Water pump failure → ₹3,000–8,000\n\n⚠️ **Never drive an overheating car** — can cause total engine failure (₹1–3 lakh damage)!`;
+  }
+
+  if(has('clutch','clutch nahi','slip','engage','disengage','pressure plate','flywheel')) {
+    return `🔧 **Clutch Issues:**\n\nSigns of clutch wear:\n• Slipping (RPM rises but car doesn't accelerate)\n• High clutch engagement point\n• Burning smell\n• Vibration when releasing clutch\n• Hard clutch pedal\n\n💰 **Clutch replacement cost:**\n• Maruti Swift/WagonR: ₹6,000–10,000\n• Hyundai i20/Creta: ₹8,000–14,000\n• Honda City: ₹10,000–16,000\n• SUVs (Scorpio, Harrier): ₹12,000–22,000\n\n💡 **Clutch life tips:**\n• Don't rest foot on clutch pedal\n• Don't ride clutch on inclines (use handbrake)\n• Don't use clutch to hold car on slope\n• Smooth gear changes`;
+  }
+
+  if(has('gearbox','transmission','gear','gear problem','stuck','nahi ja rha','shift')) {
+    if(has('automatic','at','amt','cvt','dct','torque converter')) {
+      return `⚙️ **Automatic Transmission Issues:**\n\n**AMT (Auto Manual) — Common issues:**\n• Jerking in city traffic — normal for AMT, ease throttle\n• Hesitation while upshifting\n• Tip: Use manual mode in heavy traffic\n\n**CVT (Continuously Variable):**\n• Shudder = CVT fluid needs change\n• Rubber band feel — normal for CVT\n• Never tow with CVT!\n\n**DCT (Dual Clutch):**\n• Low-speed jerk = normal, improves with time\n• Creep behavior different from torque converter\n\n💰 **Transmission service:**\n• CVT fluid change: ₹3,000–6,000\n• DCT fluid: ₹4,000–8,000\n• Full transmission repair: ₹20,000–80,000`;
+    }
+    return `⚙️ **Manual Gearbox Issues:**\n\n• Gear shift stiff = Clutch cable worn or gearbox oil low\n• Gear doesn't engage = Synchromesh worn\n• Gear pops out = Mount worn or synchro fault\n• Grinding noise = Gearbox oil low/contaminated\n\n💰 **Gearbox oil change:** ₹800–1,500 (every 40,000 km)\nSynchromesh repair: ₹8,000–20,000`;
+  }
+
+  if(has('suspension','shock','absorber','strut','bounce','rough ride','utha patka','rattle road')) {
+    return `🔩 **Suspension Issues:**\n\nSigns of suspension wear:\n• Bouncing excessively after bumps\n• Car nose-dives during braking\n• Uneven tyre wear\n• Pulling to one side\n• Steering wander\n• Clunking sound over bumps\n\n**Common Indian road problems:**\n• Pothole damage → Bent rims, damaged shocks\n• Speed breaker damage → Lower control arm\n\n💰 **Suspension repair costs:**\n• Shock absorbers (pair): ₹3,000–8,000\n• Control arm bush: ₹500–1,500\n• Control arm: ₹3,000–8,000\n• Ball joint: ₹800–2,500\n• Wheel alignment (after suspension work): ₹400–600`;
+  }
+
+  if(has('steering','power steering','hard steering','power','eps','electric steering','pull')) {
+    return `🔧 **Steering Issues:**\n\n**Electric Power Steering (EPS) issues:**\n• Warning light → Software update or motor issue\n• Heavy steering = EPS motor fault → ₹8,000–20,000\n• Drift to one side = Alignment needed → ₹400–600\n\n**Hydraulic PS issues:**\n• Whining sound = Low PS fluid → Top up ₹200\n• Heavy steering = Pump issue → ₹4,000–10,000\n• Leaking = PS hose/pump seal → ₹2,000–6,000\n\n💡 Always do wheel alignment after:\n• New tyre fitting\n• Pothole impact\n• Any suspension work`;
+  }
+
+  if(has('noise','sound','awaaz','rattling','rattle','vibration','knock','knocking','squeaking','squealing','grinding')) {
+    return `🔊 **Car Noise Diagnosis Guide:**\n\n**From Engine:**\n• Ticking/tapping = Low oil OR valve issue\n• Knocking = Serious! Low oil or bearing issue\n• Hissing = Coolant or vacuum leak\n• Rattling = Loose heat shield or catalyst\n\n**From Brakes:**\n• Squealing = Pads worn (replace soon)\n• Grinding = Pads completely gone (URGENT!)\n• Vibration = Warped disc rotors\n\n**From Suspension/Wheels:**\n• Clunking over bumps = Ball joint or shock absorber\n• Clicking when turning = CV joint\n• Humming sound = Wheel bearing → ₹1,500–3,500\n\n**From Exhaust:**\n• Loud exhaust = Hole in pipe\n• Rattling = Heat shield loose\n\nDescribe when/where the noise happens for better diagnosis!`;
+  }
+
+  if(has('ac','air condition','cooling','cool nahi','thanda nahi','heat','garam','ac problem','ac kam','compressor')) {
+    return `❄️ **AC Comprehensive Guide:**\n\n**AC not cooling — diagnosis:**\n\n1️⃣ **Gas/Refrigerant low** (most common)\n• Symptoms: Weak cooling, warm air\n• Fix: Gas refill ₹800–1,500\n\n2️⃣ **Cabin Air Filter clogged**\n• Symptoms: Reduced airflow\n• Fix: Replace filter ₹200–400\n\n3️⃣ **AC Compressor issue**\n• Symptoms: Clicking sound, no cooling\n• Fix: ₹8,000–25,000 (serious)\n\n4️⃣ **Condenser dirty/leaking**\n• Symptoms: AC works when moving but not idle\n• Fix: Clean ₹500, repair ₹2,000–5,000\n\n5️⃣ **Blower motor fault**\n• Symptoms: Air not coming out\n• Fix: ₹1,500–3,500\n\n**AC service myths:**\n❌ AC gas runs out every year — NO! If maintained, it doesn't\n❌ AC duct cleaning needed yearly — Usually NOT needed\n❌ AC service = gas refill — Check for LEAKS first!`;
+  }
+
+  if(has('electrical','wiring','fuse','short circuit','light nahi','dashboard light','warning light','battery warning','check engine')) {
+    return `⚡ **Electrical Issues:**\n\n**Warning lights explained:**\n🔴 **Red lights = STOP now:**\n• Oil pressure warning → Check oil level immediately\n• Temperature warning → Overheating, pull over!\n• Battery warning → Charging system issue\n• Brake warning → Check brake fluid/pads\n\n🟡 **Yellow/Orange = Check soon:**\n• Check Engine (CEL) → OBD scan needed (₹200–500)\n• TPMS → Check tyre pressure\n• Service due → Book service\n• ABS warning → ABS sensor issue ₹2,000–6,000\n\n**Common electrical fixes:**\n• Blown fuse → ₹10–50 (check fuse box first!)\n• Battery terminal corrosion → Clean with baking soda\n• Dim headlights → Battery weak or alternator issue\n• Central lock not working → Remote battery or actuator`;
+  }
+
+  if(has('wheel bearing','bearing','hum','humming sound','drone','whir')) {
+    return `🔩 **Wheel Bearing Issues:**\n\nSigns:\n• Humming/droning sound that changes with speed\n• Sound gets louder on one side of turn\n• Steering vibration\n• Wheel wobble\n\n**How to identify which side:**\n• Sound increases turning RIGHT → Left bearing bad\n• Sound increases turning LEFT → Right bearing bad\n\n💰 **Cost:**\n• Front wheel bearing: ₹1,500–3,500 per side\n• Rear wheel bearing: ₹1,200–3,000 per side\n\n⚠️ Don't ignore! Failed wheel bearing can cause wheel to detach — extremely dangerous!`;
+  }
+
+  // ══════════════════════════════════════
+  // 🛡️ INSURANCE — COMPREHENSIVE
+  // ══════════════════════════════════════
+
+  if(has('insurance','bima','policy','insur','claim','premium','idv','ncb','zero dep','add-on','addon','cover','renew','renewal')) {
+
+    // IDV
+    if(has('idv','insured declared value')) {
+      return `📊 **IDV (Insured Declared Value) — Everything You Need to Know:**\n\n**What is IDV?**\nIDV = Maximum amount insurer pays if car is stolen or total loss\n\n**IDV calculation:**\n• New car: 95% of ex-showroom price\n• 6 months–1 year: 85%\n• 1–2 years: 80%\n• 2–3 years: 70%\n• 3–4 years: 60%\n• 4–5 years: 50%\n\n⚠️ **Dealer Trick:** Agents set LOW IDV = cheaper premium on paper, BUT you lose money in claim!\n\n✅ **Always set IDV = current market value** of your car (check OLX/Cars24 for your model)\n\n💡 **Example:** Car worth ₹8 lakh. Low IDV of ₹6 lakh = save ₹800/year premium but lose ₹2 lakh in total loss claim!`;
+    }
+
+    // NCB
+    if(has('ncb','no claim bonus','bonus')) {
+      return `💰 **NCB (No Claim Bonus) — Complete Guide:**\n\n**NCB discount on premium:**\n• 1st renewal (1 claim-free year): 20%\n• 2nd renewal: 25%\n• 3rd renewal: 35%\n• 4th renewal: 45%\n• 5th+ renewal: **50%** (maximum!)\n\n**Key facts:**\n✅ NCB belongs to YOU (driver), not the car\n✅ Transfers when you buy a new car\n✅ NCB Certificate issued when you switch insurer\n❌ Lost if you make a claim\n❌ NCB reduces to 0% if claim in past year\n\n💡 **Small claim math:**\n₹3,000 repair → Lose NCB worth ₹8,000+ in next premium → Pay from pocket!\n\n**Rule:** Only claim for damage > ₹15,000. Protect your NCB!`;
+    }
+
+    // Zero Dep
+    if(has('zero dep','zero depreciation','zerodep','nil dep')) {
+      return `🛡️ **Zero Depreciation — Complete Guide:**\n\n**Without Zero Dep (standard policy):**\nInsurer pays depreciated value of parts:\n• Plastic parts: 50% depreciation → You pay 50%\n• Metal parts: 30% depreciation\n• Rubber parts: 50% depreciation\n• Glass: 0% depreciation\n\n**With Zero Dep:**\n✅ Insurer pays 100% of all parts cost!\n✅ No deduction for depreciation\n\n💰 **Cost:**\n• Extra premium: 10–15% more\n• For ₹8,000 annual premium → Zero Dep adds ₹800–1,200\n\n**Example saving:**\nBumper replacement ₹12,000:\n• Without Zero Dep: You pay ₹4,000–6,000\n• With Zero Dep: You pay ₹0\n\n✅ **Recommended for:** Cars under 5 years old\nAfter 5 years: Consider skipping to save premium`;
+    }
+
+    // Engine Protection
+    if(has('engine protect','engine protection','flood','water','oil leak')) {
+      return `🔧 **Engine Protection Cover:**\n\n**Standard policy does NOT cover:**\n• Engine damage due to water ingress (flood/puddle)\n• Consequential engine damage (oil leak caused damage)\n• Hydrostatic lock\n\n**Engine Protection add-on covers:**\n✅ Engine/gearbox damage due to water ingress\n✅ Oil leakage causing engine damage\n✅ Consequential losses\n\n💰 Extra premium: ₹500–1,500/year\n\n⚠️ **MUST HAVE if you live in:**\n• Mumbai, Chennai, Kolkata, Hyderabad (flood-prone)\n• Any area with waterlogging in monsoon\n\n🚨 **Without this:** Flood/water damage claim can be REJECTED even in comprehensive policy!`;
+    }
+
+    // Claim process
+    if(has('claim','accident','damage','car damaged','kaise kare','process','steps')) {
+      return `🛡️ **Insurance Claim Process — Step by Step:**\n\n**At accident spot:**\n1. Don't admit fault to anyone\n2. Take photos of damage from all angles\n3. Note third party vehicle number, contact, insurance\n4. Get police FIR if serious accident or third-party claim\n\n**Within 24 hours:**\n5. Call insurer helpline or Surveyor\n6. File claim online or via app\n7. Get claim reference number\n\n**At garage:**\n8. Use insurer's network garage = cashless claim (easier!)\n9. Non-network garage = pay and claim reimbursement\n10. Don't start repair until surveyor inspects\n\n⚠️ **Don'ts:**\n• Don't repair before surveyor inspection\n• Don't sign blank documents\n• Don't exaggerate claim — affects future renewals\n\n💡 **Cashless vs Reimbursement:**\nCashless = Faster, zero paperwork, insurer handles payment\nReimbursement = You pay first, insurer repays (15–30 days)`;
+    }
+
+    // Third Party
+    if(has('third party','tp insurance','third-party','mandatory','tp only')) {
+      return `📋 **Third Party Insurance — Mandatory by Law:**\n\n**What Third Party covers:**\n✅ Injury/death to third party\n✅ Damage to third party property (up to ₹7.5 lakh)\n✅ Personal accident for owner-driver (₹15 lakh)\n\n**What it does NOT cover:**\n❌ Damage to YOUR car\n❌ Your own injuries (except personal accident)\n❌ Theft of your car\n\n💰 **TP premium (fixed by IRDAI):**\n• Cars < 1000cc: ₹2,094/year\n• 1000–1500cc: ₹3,416/year\n• > 1500cc: ₹7,897/year\n\n⚠️ **TP-only = minimum legal requirement**\nFor any self-damage protection, you NEED comprehensive policy`;
+    }
+
+    // Bundled long-term policy
+    if(has('long term','5 year','3 year','bundled')) {
+      return `📋 **Long-Term Insurance (3+5 year):**\n\nSince Sep 2018, Supreme Court mandated:\n• New cars: 3-year TP + 1-year Own Damage (OD)\n• OR 5-year bundled (TP + OD for 5 years)\n\n**Your first renewal options:**\n• TP is already covered for 3 years\n• Only renew OD portion each year\n• Compare OD rates across insurers\n\n💡 **Best practice:** Renew OD online — save 30–40% vs agent!\nCompare on: PolicyBazaar, Coverfox, Turtlemint`;
+    }
+
+    // RSA - Roadside Assistance
+    if(has('rsa','roadside','breakdown','tow','towing')) {
+      return `🆘 **Roadside Assistance (RSA) Add-on:**\n\n**RSA covers:**\n✅ Towing to nearest garage (typically 50–100 km)\n✅ Flat tyre assistance\n✅ Dead battery jump-start\n✅ Emergency fuel delivery\n✅ Lockout assistance\n✅ Minor on-road repairs\n\n💰 Cost: ₹300–800/year\n🌟 **Highly recommended** — especially for highway driving!\n\n**Call RSA if:**\n• Car breaks down on highway\n• Tyre puncture and no spare\n• Battery dead\n• Key locked inside\n\n📞 Most insurers: Single helpline number (check policy document)`;
+    }
+
+    // Return to Invoice
+    if(has('return to invoice','rti','invoice value')) {
+      return `📄 **Return to Invoice (RTI) Add-on:**\n\n**Standard policy:** Pays IDV (current market value)\n**RTI:** Pays original invoice price (what you paid for car)\n\n**Difference:**\nCar invoice price: ₹12 lakh\nCurrent IDV (3 years old): ₹8 lakh\nRTI pays: ₹12 lakh!\nSaving: ₹4 lakh!\n\n💰 Extra premium: ₹1,000–2,500/year\n\n✅ **Recommended for:** New cars (first 3–5 years)\n❌ Not needed: After 5 years (value difference less significant)\n\n⚠️ RTI pays invoice price, not including accessories/modifications`;
+    }
+
+    // Consumables
+    if(has('consumable','nuts','bolts','oil claim')) {
+      return `🧴 **Consumables Cover:**\n\nStandard policy does NOT pay for:\n• Engine oil used in repair\n• Nuts, bolts, screws\n• Brake fluid\n• Other consumables\n\nConsumables cover pays for all of these!\n\n💰 Extra premium: ₹200–500/year\n✅ **Worth it** especially for major accidents where consumables add up\n\nExample: Major repair bill ₹25,000 — consumables portion: ₹2,000–4,000`;
+    }
+
+    // General insurance tips
+    return `🛡️ **Car Insurance Complete Guide:**\n\n**Policy types:**\n• Third Party (mandatory) — covers others only\n• Comprehensive — covers own + others\n\n**Must-have Add-ons:**\n🔴 Zero Depreciation (cars < 5 years)\n🔴 Engine Protection (flood-prone areas)\n🔴 Personal Accident (mandatory ₹15 lakh)\n🟡 Roadside Assistance\n🟡 Return to Invoice (new cars)\n\n**Save money:**\n• Buy ONLINE — save 30–40%!\n• NCB — maintain claim-free record\n• Correct IDV — not too low/high\n\nAsk about: IDV, NCB, Zero Dep, Claims, Engine Protection, or RTI!`;
+  }
+
+  // ══════════════════════════════════════
+  // 📋 TRAFFIC LAWS & RULES (INDIA)
+  // ══════════════════════════════════════
+
+  if(has('traffic','challan','fine','rule','law','mvact','motor vehicle','license','licence','driving license','dl','rc','registration','permit','fitness','pollution','puc','rto','fasttag','toll')) {
+
+    // Challan / Fines
+    if(has('challan','fine','penalty','kitna','amount','caught','pakda')) {
+      return `📋 **Traffic Challan Fines 2024 (Motor Vehicles Act):**\n\n**Common fines:**\n• No helmet (2-wheeler): ₹1,000\n• No seatbelt: ₹1,000\n• Using phone while driving: ₹5,000\n• Drunk driving: ₹10,000 + 6 months jail (1st time)\n• Red light jumping: ₹5,000\n• No PUC certificate: ₹10,000 or 6 months jail!\n• No insurance: ₹2,000 (1st), ₹4,000 (repeat)\n• Overspeeding: ₹1,000–₹2,000\n• Rash driving: ₹5,000\n• Wrong side driving: ₹5,000\n• No DL: ₹5,000\n• No RC: ₹5,000\n• Emergency vehicle way not given: ₹10,000\n\n💡 **E-challan:** Check on echallan.parivahan.gov.in\n📱 **Pay online:** mParivahan app or Parivahan website`;
+    }
+
+    // Driving License
+    if(has('driving license','dl','licence','learner','learning','ll','permanent','renew')) {
+      return `📋 **Driving License Guide:**\n\n**Types of DL:**\n• Learner's License (LL): Valid 6 months, apply online\n• Permanent DL: Apply after 30 days of LL\n• International DL: For driving abroad\n\n**DL categories:**\n• LMV-NT: Cars, Jeeps (non-commercial)\n• MCWOG: Motorcycles without gear\n• MCWG: Motorcycles with gear\n• Transport: Commercial vehicles\n\n**Validity:**\n• Till age 40 if issued before 30\n• 10 years after 40\n• 5 years after 50\n\n**Online apply:** sarathi.parivahan.gov.in\n\n**DL renewal:**\n• 30 days before expiry (or 1 year grace period)\n• Online renewal available\n• Cost: ₹200–500\n\n📱 **DigiLocker:** Store DL digitally — legally valid!`;
+    }
+
+    // RC / Registration
+    if(has('rc','registration certificate','vehicle registration','transfer','ownership')) {
+      return `📋 **RC (Registration Certificate) Guide:**\n\n**RC contains:**\n• Vehicle registration number\n• Owner details\n• Vehicle specifications\n• Fuel type, engine CC\n\n**RC validity:**\n• New vehicles: 15 years (then renew every 5 years)\n• Renewal: Apply at RTO 6 months before expiry\n• Renewal cost: ₹600–1,500\n\n**RC transfer (ownership change):**\n• Form 29, 30 required\n• Transfer within 30 days of purchase\n• Cost: ₹300–600\n• NOC needed if from another state\n\n📱 **DigiLocker:** RC stored digitally — legally valid alternative to physical RC\n\n⚠️ Driving without valid RC: Fine ₹5,000!`;
+    }
+
+    // PUC
+    if(has('puc','pollution','emission','certificate','pollution check')) {
+      return `🌿 **PUC Certificate Guide:**\n\n**Mandatory by law!** Fine: ₹10,000 or 6 months jail\n\n**Validity:**\n• New car: PUC valid 1 year with registration\n• After that: Every 6 months\n• BS6 cars: May get 1 year validity (some RTOs)\n\n**Where to get:**\n• Authorized PUC centers (green and yellow boards)\n• Many petrol stations have PUC facility\n• Cost: ₹60–100\n\n**Emission limits (BS6 petrol):**\n• CO: Max 0.5%\n• HC: Max 750 ppm\n\n**Carry in car:** PUC certificate + date of next check\n\n📱 **mParivahan app:** Check PUC expiry digitally\n\n💡 DigiLocker or mParivahan app = digital PUC valid!`;
+    }
+
+    // FASTag
+    if(has('fastag','fast tag','toll','highway toll','nhai')) {
+      return `💳 **FASTag — Everything You Need to Know:**\n\n**Mandatory:** All vehicles must have FASTag since Feb 2021\n\nWithout FASTag at toll = Pay double toll charge!\n\n**Getting FASTag:**\n• Banks: HDFC, SBI, ICICI, Axis etc.\n• Amazon/Flipkart (pre-loaded)\n• Paytm FASTag\n• NHAI Toll Plazas\n• Cost: ₹100–200 (includes security deposit)\n\n**FASTag recharge:**\n• Any UPI, NEFT, net banking\n• Paytm, BHIM, bank apps\n• Auto-recharge option available\n\n**FASTag linked to RC number** — one tag per vehicle\n\n⚠️ **Common issues:**\n• Tag not reading → Ensure correct position (inside windshield, top center)\n• Low balance → Auto-deducted; recharge before highway trips\n• Blacklisted tag → Check your bank, usually low balance issue`;
+    }
+
+    // Speed limits
+    if(has('speed limit','speed','overspeed','kmph','highway speed','expressway')) {
+      return `🚗 **Speed Limits in India:**\n\n**Roads:**\n• National/State Highway: 100 kmph (cars)\n• City/Urban roads: 50 kmph\n• Near school/hospital: 25 kmph\n• Expressways (some): 120 kmph\n\n**Fines for overspeeding:**\n• LMV (cars): ₹1,000–2,000\n• Speed cameras at most highways now\n\n**Important rules:**\n• Speed limit may vary by state\n• Check state-specific speed limits\n• Speed governors mandatory on commercial vehicles\n\n💡 **Safe driving on Indian highways:**\n• Keep left lane for slower speeds\n• Right lane for overtaking only\n• Don't drive in middle of highway (common mistake!)`;
+    }
+
+    // Drunk driving
+    if(has('drunk','alcohol','dui','dwi','drink and drive','nasha','sharab')) {
+      return `🚫 **Drunk Driving Laws (India):**\n\n**Legal limit:** BAC (Blood Alcohol Concentration) < 30mg/100ml blood\n\n**Penalties (Motor Vehicles Act 2019):**\n\n**First offense:**\n• Fine: ₹10,000 OR\n• Imprisonment: 6 months OR Both\n\n**Second offense (within 3 years):**\n• Fine: ₹15,000 OR\n• Imprisonment: 2 years OR Both\n\n**Additional:**\n• DL suspended/cancelled\n• Insurance can be voided\n\n⚠️ **Zero tolerance policy** in many states\n🚫 **Never drink and drive** — it's not worth the risk to yourself and others`;
+    }
+
+    // Seatbelt
+    if(has('seatbelt','seat belt','belt','fine seatbelt')) {
+      return `🔒 **Seatbelt Law:**\n\n• Mandatory for ALL occupants (front AND rear)\n• Fine for not wearing: ₹1,000 per person\n• Police can stop and penalize\n\n**Common myths:**\n❌ "Rear seat passengers don't need seatbelt" — WRONG, mandatory!\n❌ "Short distance nahi chahiye" — Law applies everywhere\n\n✅ **Children:**\n• Children under 4 years: Child safety seat mandatory\n• Children under 12: Cannot sit in front seat`;
+    }
+
+    // Phone while driving
+    if(has('phone','mobile','call','driving phone')) {
+      return `📵 **Mobile Phone While Driving:**\n\nFine: ₹5,000\n\nThis includes:\n• Holding phone to ear\n• Texting\n• Using phone handheld\n\n✅ **Allowed:** Hands-free calling, mounted GPS navigation\n\n⚠️ Even hands-free can cause distraction — stay focused!\n💡 Tip: Use Android Auto or Apple CarPlay for safer navigation`;
+    }
+
+    // Helmet
+    if(has('helmet','two wheeler','bike','scooter','head')) {
+      return `⛑️ **Helmet Law (Two-Wheeler):**\n\n• Mandatory for rider AND pillion\n• ISI marked helmet required\n• Fine for no helmet: ₹1,000\n• DL suspension possible for repeated offense\n\n**Helmet must have:**\n• ISI certification mark\n• Proper fit (snug but not tight)\n• Strap properly fastened\n\n⚠️ Half-face helmet: Legal but not recommended for safety\n✅ Full-face helmet: Best protection`;
+    }
+
+    // General traffic rules
+    return `📋 **Indian Traffic Laws — Key Rules:**\n\n**Mandatory documents in car:**\n✅ RC (Registration Certificate)\n✅ Driving License\n✅ Insurance Certificate\n✅ PUC Certificate\n✅ FASTag (for national highways)\n\n**Key rules:**\n• Drive on LEFT side\n• Seatbelt mandatory (all occupants)\n• No phone while driving (₹5,000 fine)\n• Speed limits: 50 kmph city, 100 kmph highway\n• Give way to emergency vehicles\n\n📱 **DigiLocker & mParivahan app:** Digital copies of all documents legally valid!\n\nAsk about: Challan fines, DL, RC, PUC, FASTag, speed limits, or specific rules!`;
+  }
+
+  // ══════════════════════════════════════
+  // 🔧 SERVICE & MAINTENANCE
+  // ══════════════════════════════════════
+
+  if(has('oil change','oil','tel change','engine oil','lubricant','castrol','mobil','gulf','shell','servo','motul')) {
+    if(has('best','konsa','which','recommend','brand','grade')) {
+      return `🛢️ **Engine Oil Guide for India:**\n\n**Oil grades explained:**\n• 5W-30: Most modern petrol cars\n• 10W-30: Older petrol cars, hot climate\n• 15W-40: Diesel cars, CNG cars\n• 0W-20: Toyota/Honda hybrids\n\n**Best brands for India:**\n🏆 **Castrol:** GTX (budget), Magnatec (mid), Edge (premium)\n🏆 **Mobil:** Super 3000 (budget), Delvac (diesel), 1 (premium)\n🏆 **Shell:** Helix HX7 (mid), Ultra (premium)\n🏆 **Gulf:** Formula G (diesel), Gulf Pride (petrol)\n\n💰 **Cost per litre:**\n• Mineral: ₹200–350/L\n• Semi-synthetic: ₹350–500/L\n• Full synthetic: ₹600–1,000/L\n\n💡 **Always check owner manual** for recommended grade — using wrong grade can void warranty!`;
+    }
+    return `🛢️ **Oil Change Guide:**\n• Petrol: Change every 10,000 km\n• Diesel: Every 10,000 km (5,000 km for commercial)\n• CNG: Every 5,000–8,000 km\n• ALWAYS replace oil filter with oil change\n\n💰 Cost: ₹800–2,500 (oil + filter + labour)\nSynthetic: ₹2,500–5,000`;
+  }
+
+  if(has('brake','brakes','brake pad','brake disc','rotor','brake fluid')) {
+    return `🛑 **Complete Brake Guide:**\n\n**Brake pads life:** 40,000–60,000 km (city driving = less)\n\n**Signs of worn pads:**\n• Squealing/squeaking sound\n• Vibration when braking\n• Longer stopping distance\n• Car pulling to side\n• Grinding metal sound (URGENT)\n\n**Brake fluid:** Change every 30,000 km / 2 years\n(Brake fluid absorbs water — degraded fluid = spongy pedal)\n\n💰 **Costs:**\n• Brake pads (per axle): ₹1,500–4,000\n• Disc rotor: ₹2,000–5,000 each\n• Brake fluid: ₹300–600\n\n✅ **Best aftermarket brands:**\n• TVS Girling, Mando, Brembo, TRW, Endurance`;
+  }
+
+  if(has('tyre','tire','tyres','puncture','flat','balancing','alignment','rotation')) {
+    if(has('best','which','brand','konsa','recommend')) {
+      return `🔄 **Best Tyres for Indian Cars:**\n\n**Budget segment:**\n• MRF ZVTS / Wanderer: Excellent grip, made in India\n• CEAT SecuraDrive: Good for city\n• Apollo Amazer XP: Value for money\n\n**Mid segment:**\n• MRF ZSPS: Good balance\n• CEAT SportDrive: Better handling\n• Michelin Primacy: International quality\n\n**Premium:**\n• Bridgestone Turanza: Comfort focused\n• Continental ComfortContact: Premium ride\n• Pirelli: Performance oriented\n\n💰 **Price range (185/65 R15):**\n• Budget: ₹3,500–4,500\n• Mid: ₹4,500–6,000\n• Premium: ₹6,000–9,000\n\n💡 **Tip:** MRF is India's best for Indian roads — heat resistance, pothole tolerance!`;
+    }
+    if(has('pressure','psi','air','hawa')) {
+      return `🔄 **Tyre Pressure Guide:**\n\n**Standard pressures:**\n• Small cars (Alto, WagonR, i10): 32 PSI front/rear\n• Mid-size (Swift, i20, Venue): 33–35 PSI\n• SUVs (Creta, Seltos, XUV): 35–38 PSI\n• Check your door sticker for exact spec!\n\n**Check every 2 weeks** (when cold)\n\n**Low pressure effects:**\n• Reduced fuel efficiency (-5%)\n• Faster tyre wear\n• Overheating, blowout risk\n\n**Tube vs Tubeless:**\nModern cars = tubeless (safer, slow puncture instead of blowout)\n\n💰 Puncture repair: ₹100–200 (tubeless)\nTyre replacement: ₹3,500–6,000 each`;
+    }
+    return `🔄 **Tyre Maintenance:**\n• Check pressure every 2 weeks (32–35 PSI)\n• Rotate every 10,000 km (extends life by 30%!)\n• Wheel alignment every 20,000 km\n• Wheel balancing if vibration at speed\n• Replace at 1.6mm tread depth (check with ₹1 coin)\n\n💡 **Tyre life:** 40,000–60,000 km (replace by 5–6 years regardless of tread)`;
+  }
+
+  if(has('battery','batery','battery weak','dead battery','jump start','dead')) {
+    return `🔋 **Car Battery Complete Guide:**\n\n**Life:** 3–5 years (Indian conditions = shorter due to heat)\n\n**Signs of weak battery:**\n• Slow cranking / engine takes long to start\n• Dashboard warning light\n• Dimming headlights\n• Electrical issues\n• Car dies on short trips\n\n**Jump start process:**\n1. Get jumper cables\n2. Red (+) to dead battery +\n3. Red (+) to good battery +\n4. Black (-) to good battery -\n5. Black (-) to METAL (not battery!) of dead car\n6. Start good car, wait 3 min, start dead car\n\n**Top batteries in India:**\n• Amaron: 18–84 months warranty, heat-resistant\n• Exide: Most trusted, 24–36 months warranty\n• Luminous: Good value\n• SF Sonic (FISCO): Budget option\n\n💰 Cost:\n• Small car (35Ah): ₹3,000–4,500\n• Mid-size (45Ah): ₹3,500–5,500\n• SUV (65Ah+): ₹5,000–8,000`;
+  }
+
+  if(has('filter','air filter','oil filter','fuel filter','cabin filter','ac filter')) {
+    return `🔩 **Filter Replacement Guide:**\n\n**Air Filter:**\n• Life: 20,000 km\n• Cost: ₹200–600\n• Effect: Poor mileage, reduced power if clogged\n\n**Oil Filter:**\n• Change EVERY oil change (every 10,000 km)\n• Cost: ₹150–400\n• Never skip! Dirty filter damages engine\n\n**Fuel Filter:**\n• Petrol: 30,000–40,000 km\n• Diesel: 15,000–20,000 km (critical!)\n• Cost: ₹300–1,500\n\n**Cabin/AC Filter:**\n• Life: 10,000–15,000 km\n• Cost: ₹200–600\n• Effect: Musty smell, reduced AC airflow\n\n💡 **Aftermarket filters:** Bosch, Mahle, K&N are excellent brands\nOEM filters: Safe but often 50% more expensive`;
+  }
+
+  // ══════════════════════════════════════
+  // 💰 COST / PRICE QUERIES
+  // ══════════════════════════════════════
+
+  if(has('kitna','kitne','cost','price','rate','lagega','paisa','rupee','rs ','₹','charge','fee','labour')) {
+    return `💰 **Car Repair Cost Guide (India 2024):**\n\n**Routine Service:**\n• Oil change (budget car): ₹800–1,500\n• Oil change (premium car): ₹2,500–5,000\n• General service (Maruti): ₹2,000–4,000\n• General service (Hyundai): ₹3,000–5,500\n• Major service (any car): ₹8,000–18,000\n\n**Common Repairs:**\n• Brake pads (per axle): ₹1,500–4,000\n• Battery: ₹3,000–6,000\n• Tyre (each): ₹3,500–6,000\n• AC gas refill: ₹800–1,500\n• Wheel alignment: ₹400–600\n• Wheel balancing (per wheel): ₹100–150\n• Shock absorbers (pair): ₹3,000–8,000\n• Clutch kit: ₹6,000–18,000\n• Turbo repair: ₹15,000–50,000\n\n⚠️ Prices vary by city (metro = 20–30% higher)\n💡 Use our Bill Review tool to check if your estimate is fair!`;
+  }
+
+  // ══════════════════════════════════════
+  // 🔍 HOW TO USE APP
+  // ══════════════════════════════════════
+
+  if(has('app','use kaise','kaise use','help','features','kya karta','kya hai','what is carbillhelper','guide')) {
+    return `📱 **CarBillHelper App Guide:**\n\n**🏠 Home (Dashboard):**\nCar health score, alerts, quick stats\n\n**🚗 My Cars:**\nAdd multiple cars, switch between them\nSupports all Indian brands with variants!\n\n**🔧 Service:**\nLog service history with bills\nTrack total expenses\n\n**🧾 Tools:**\n• Bill Review: Enter each item → We flag overcharging\n• Service Advisory: KM-based what to do and skip\n\n**⚙️ Parts & Warranty:**\n• Track part replacements\n• See health % for each part\n• Warranty tracker (battery, tyres, etc.)\n\n**📁 Docs & Insurance:**\n• Store RC, PUC, Insurance digitally\n• See insurance coverage details\n• Expiry alerts\n\n**🤖 AI Assistant (Me!):**\nAsk anything about your car 😊\n\nMain apko Hindi/Hinglish/English mein jawab de sakta hoon!`;
+  }
+
+  // ══════════════════════════════════════
+  // DEFAULT
+  // ══════════════════════════════════════
+
+  const suggestions = car
+    ? `\n\n**Quick examples for your ${carName}:**\n• "Next service kab hai?"\n• "4th service mein kya karna chahiye?"\n• "${car.fuel} car ke common problems kya hain?"\n• "Insurance kab expire ho rahi hai?"\n• "Bill analysis karo"\n• "Tyre pressure kitna hona chahiye?"`
+    : `\n\n**Try asking:**\n• "Diesel car ki service kab karni chahiye?"\n• "Zero dep kya hota hai?"\n• "Traffic challan kitna lagta hai?"\n• "CNG cylinder rules kya hain?"\n• "Tyre kaunsa lena chahiye?"`;
+
+  return `🤖 I received: **"${raw.slice(0,60)}${raw.length>60?'...':''}"**\n\nI can help with all of these topics:\n🔧 Service & Maintenance\n⛽ Petrol | 🛢️ Diesel | 🟩 CNG | 🔋 Electric | ♻️ Hybrid\n🛡️ Insurance (IDV, NCB, claims, add-ons)\n📋 Traffic Laws & Fines\n🚗 All Indian car brands & problems\n💰 Cost estimates\n⚙️ Parts, warranty, documents${suggestions}`;
 }
+
 
 function sendAIMessage(){
   const input=document.getElementById('aiInput');
   const msg=input.value.trim();
   if(!msg) return;
   const chat=document.getElementById('aiChat');
-  // Add user message
-  chat.innerHTML+=`<div class="ai-msg user">${msg}</div>`;
+  chat.innerHTML+=`<div class="ai-msg user">${msg.replace(/</g,'&lt;')}</div>`;
   input.value='';
-  // Typing indicator
   const typingId='typing_'+Date.now();
   chat.innerHTML+=`<div class="ai-msg typing" id="${typingId}"><span class="ai-typing-dot"></span><span class="ai-typing-dot"></span><span class="ai-typing-dot"></span></div>`;
   chat.scrollTop=chat.scrollHeight;
-  // Response after delay
+  const delay=800+Math.random()*600;
   setTimeout(()=>{
     const typing=document.getElementById(typingId);
     if(typing) typing.remove();
     const response=getAIResponse(msg);
-    chat.innerHTML+=`<div class="ai-msg bot">${response}</div>`;
+    // Format response — convert **bold** and newlines
+    const formatted=response
+      .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')
+      .replace(/\n/g,'<br>');
+    chat.innerHTML+=`<div class="ai-msg bot">${formatted}</div>`;
     chat.scrollTop=chat.scrollHeight;
-  },1000+Math.random()*500);
+  },delay);
 }
 
 // ════════════════════════════════════════
 // UTILS
 // ════════════════════════════════════════
+function selectPart(el){
+  const partName = el.getAttribute('data-part');
+  if(partName) document.getElementById('partName').value = partName;
+  openSheet('updatePartSheet');
+}
+function setPartName(el){
+  // Get part name from the card
+  const card = el.closest ? el : el;
+  // Use data attribute if available
+  const pname = el.getAttribute('data-part');
+  if(pname) document.getElementById('partName').value = pname;
+}
 function clearForm(ids){ids.forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});}
 
 // ════════════════════════════════════════
@@ -1896,4 +2447,462 @@ window.addEventListener('load',()=>{
 });
 </script>
 </body>
-</html>
+</html>// ════════════════════════════════════════════════════════════
+// AI ASSISTANT — Complete Indian Automotive Knowledge Base
+// Covers: All fuel types, All problems, Insurance, Traffic Laws
+// Hindi + Hinglish + English support
+// ════════════════════════════════════════════════════════════
+
+function getAIResponse(msg){
+  const car = getActiveCar();
+  const raw = msg;
+  const lower = msg.toLowerCase()
+    .replace(/[।,!?।]/g,' ')
+    .replace(/\s+/g,' ')
+    .trim();
+
+  const has = (...words) => words.some(w => lower.includes(w));
+  const hasAll = (...words) => words.every(w => lower.includes(w));
+
+  const carName = car ? `${car.brand} ${car.model}` : 'your car';
+  const carFuel = car ? (car.fuel||'').toLowerCase() : '';
+  const carKm = car ? (car.km||0) : 0;
+  const svcs = car ? getCarData(car.id,'services') : [];
+  const docs = car ? getCarData(car.id,'documents') : [];
+  const lastSvc = svcs.length ? [...svcs].sort((a,b)=>new Date(b.date)-new Date(a.date))[0] : null;
+  const ins = docs.find(d=>d.type==='Insurance');
+
+  // ══════════════════════════════════════
+  // GREETINGS & SMALL TALK
+  // ══════════════════════════════════════
+  if(has('hello','hi ','hii','helo','hey','namaste','namaskar','jai hind','good morning','good evening','good afternoon','salam','salaam')) {
+    return car
+      ? `👋 **Hello!** Your ${carName} ki details ready hai.\n\nMain inme help kar sakta hoon:\n🔧 Service & maintenance\n🛡️ Insurance & claims\n⚖️ Traffic laws & fines\n🔋 EV/CNG/Petrol/Diesel problems\n💰 Bill analysis & overcharge detection\n\nKya jaanna chahte hain? 😊`
+      : `👋 **Hello!** CarBillHelper AI mein aapka swagat hai!\n\nMain yahan hoon help karne ke liye:\n🔧 Car service & repair\n🛡️ Insurance guidance\n⚖️ Traffic laws & penalties\n🚗 All fuel types guidance\n\nPehle apni car add karein better answers ke liye! 😊`;
+  }
+
+  if(has('thik hai','theek hai','okay','ok ','acha','achha','samajh','got it','shukriya','thanks','thank you','dhanyawad','bahut achha','perfect','great','nice')) {
+    return `✅ Great! Koi aur sawaal ho toh zaroor poochhen — service, insurance, traffic rules, ya koi bhi car problem! 😊`;
+  }
+
+  if(has('kya hai','kya hota','matlab','explain','samjhao','bataiye','batao','what is','what are')) {
+    // Will fall through to specific topic handlers below
+  }
+
+  // ══════════════════════════════════════
+  // MY CAR INFO
+  // ══════════════════════════════════════
+  if(has('meri car','mera car','meri gaadi','meri vehicle','my car info','apni car','car details') && car) {
+    let r = `🚗 **${car.brand} ${car.model}**\n`;
+    if(car.variant) r += `Variant: ${car.variant}\n`;
+    r += `Year: ${car.year||'--'} | Fuel: ${car.fuel||'--'}\n`;
+    r += `KM: ${fmt(car.km||0)}\n`;
+    if(car.reg) r += `Reg: ${car.reg}\n`;
+    if(car.color) r += `Color: ${car.color}\n`;
+    if(lastSvc) r += `\n🔧 Last service: ${fmtDate(lastSvc.date)} at ${fmt(lastSvc.km)} km`;
+    if(ins && ins.expiry) {
+      const d = daysFromNow(ins.expiry);
+      r += `\n🛡️ Insurance: ${d<0?'EXPIRED ❌':d+' days remaining ✅'}`;
+    }
+    return r;
+  }
+
+  // ══════════════════════════════════════
+  // NEXT SERVICE
+  // ══════════════════════════════════════
+  if(has('next service','agli service','kab service','service kab','service due','service karna') && car) {
+    if(lastSvc) {
+      const nextKm = lastSvc.nextKm || (lastSvc.km + 10000);
+      const kmLeft = nextKm - carKm;
+      return `🔧 **Next Service — ${carName}:**\n\nLast service: ${fmtDate(lastSvc.date)} at ${fmt(lastSvc.km)} km\nNext due: **${fmt(nextKm)} km**\n${kmLeft>0?`✅ ${fmt(kmLeft)} km remaining`:'\n⚠️ **Service OVERDUE! Book immediately.**'}\n\n${carFuel.includes('cng')?'CNG cars mein ek extra check: Gas kit valve and tubing inspection karo.':''}`;
+    }
+    return `🔧 Service history nahi mili ${carName} ki. Service History tab mein records add karein!`;
+  }
+
+  // ══════════════════════════════════════
+  // PETROL CAR PROBLEMS & MAINTENANCE
+  // ══════════════════════════════════════
+  if(has('petrol') || (carFuel.includes('petrol') && !has('diesel','cng','electric','ev'))) {
+
+    if(has('problem','issue','trouble','dikkat','kharab','band','start nahi','chalu nahi')) {
+      return `⛽ **Common Petrol Car Problems:**\n\n🔴 **Engine won't start:**\n• Dead battery → Jump start ya replace\n• Fuel pump failure → Garage check\n• Spark plug issue → Replace (₹150-400 each)\n\n🟡 **Rough idling / vibration:**\n• Dirty air filter → Clean/replace (₹300-600)\n• Faulty spark plugs → Replace set\n• Throttle body dirty → Cleaning (₹500-800)\n\n🟡 **Poor mileage:**\n• Old spark plugs\n• Dirty fuel injectors\n• Wrong tyre pressure\n• O2 sensor fault\n\n🔴 **Engine overheating:**\n• Low coolant → Top up immediately\n• Radiator blockage\n• Thermostat stuck\n\nKaunsi specific problem hai? Detail batao!`;
+    }
+
+    if(has('mileage','milage','average','kitna deta','economy','fuel efficiency')) {
+      const brand = car ? car.brand : '';
+      const typical = brand.includes('Maruti')?'15-22':brand.includes('Hyundai')?'14-20':brand.includes('Honda')?'14-18':'12-20';
+      return `⛽ **Petrol Mileage Tips:**\n\nTypical real-world mileage: ${typical} km/L\n\n✅ **Improve karne ke tarike:**\n1. Tyre pressure sahi rakhein (32-35 PSI)\n2. Air filter clean rakho — choke hone par 15% mileage girti hai\n3. Spark plugs replace karein every 40,000 km\n4. Engine oil ka sahi grade use karein\n5. Smooth driving — sudden acceleration avoid karein\n6. AC use minimize karein city mein\n7. Weight kam karein boot se\n8. Top speed 80-100 kmph mein best mileage milti hai\n\n⚠️ **Avoid:** High octane fuel (Speed/Power) — petrol cars mein mostly unnecessary, waste of ₹!`;
+    }
+
+    if(has('spark plug','spark','ignition')) {
+      return `⚡ **Spark Plug Guide:**\n\nChange interval: **40,000 km** (or earlier if rough idling)\n\nTypes:\n• Copper plugs: ₹50-100 each, change 20-30k km\n• Iridium plugs: ₹300-600 each, last 60-80k km\n• Platinum plugs: ₹200-400 each\n\nSigns of worn spark plugs:\n• Rough idling\n• Difficulty starting\n• Poor acceleration\n• Bad mileage\n• Engine misfiring\n\nBrands: NGK, Bosch, Denso — all reliable\n💰 Full set replacement: ₹800-3,000 depending on type and car`;
+    }
+  }
+
+  // ══════════════════════════════════════
+  // DIESEL CAR PROBLEMS & MAINTENANCE
+  // ══════════════════════════════════════
+  if(has('diesel') || (carFuel.includes('diesel') && !has('petrol','cng','electric'))) {
+
+    if(has('problem','issue','dikkat','kharab','smoke','dhua','dhuan','black smoke')) {
+      return `🚗 **Diesel Car Problems:**\n\n🔴 **Black smoke from exhaust:**\n• Air filter choked → Replace immediately\n• Injector issue → Diesel injector cleaning (₹2,000-5,000)\n• Turbo problem → Turbocharger check\n\n🟡 **White smoke:**\n• Cold start = Normal (first 2-3 minutes)\n• If continuous = Head gasket issue (serious!)\n• Coolant mixing with fuel\n\n🟡 **Blue smoke:**\n• Engine oil burning → Piston rings worn\n• Valve seals leaked\n\n🔴 **Hard starting in winter:**\n• Glow plug problem → Replace (₹500-1,500 each)\n• Diesel gel in cold → Use winter grade diesel\n\n⚠️ **DPF (Diesel Particulate Filter):**\nBS6 diesel cars mein hota hai — regular highway driving se clean rehta hai. Short city trips se choke ho sakta hai.`;
+    }
+
+    if(has('mileage','average','economy','kitna','fuel efficiency')) {
+      return `🚗 **Diesel Mileage Guide:**\n\nDiesel cars mein better mileage milti hai petrol se (20-35% better)\n\n✅ **Best practices:**\n• Warm up engine 30-60 seconds before driving\n• Highway driving mein 800-1200 RPM maintain karein\n• Don't over-rev diesel engine\n• Fuel filter change on time karo (20,000-30,000 km)\n• Use good quality diesel (avoid adulterated fuel)\n\n🔴 **Warning signs of adulterated diesel:**\n• Sudden mileage drop\n• Rough running\n• Black smoke increase\n• Injector damage`;
+    }
+
+    if(has('glow plug','glow','start')) {
+      return `🔌 **Diesel Glow Plugs:**\n\nGlow plugs diesel engine ko start karne ke liye preheat karte hain.\n\nChange interval: 60,000-80,000 km\n\nSigns of failure:\n• Hard starting (especially in morning/winter)\n• White smoke on startup\n• Check engine light\n• Engine misfiring\n\nCost: ₹500-1,500 per plug\nFull set replacement: ₹3,000-8,000`;
+    }
+
+    if(has('dpf','particulate','filter','bs6','bs-6')) {
+      return `🔧 **DPF (Diesel Particulate Filter) — BS6 Cars:**\n\nBS6 diesel cars mein mandatory DPF hota hai.\n\n**DPF kya karta hai?**\nExhaust se particulate matter (soot) pakadta hai.\n\n**Regeneration:**\nHighway pe 60+ kmph par auto-clean hota hai.\nCity driving se clog ho sakta hai.\n\n**Signs of clogged DPF:**\n• Warning light\n• Power loss\n• Higher fuel consumption\n• Engine limp mode\n\n**Solution:**\nRegular highway trips (30+ min at 80+ kmph)\nForced regeneration at service centre\nReplacement: ₹30,000-80,000 (expensive!)\n\n⚠️ Avoid short city trips only for DPF health!`;
+    }
+  }
+
+  // ══════════════════════════════════════
+  // CNG CAR PROBLEMS & MAINTENANCE
+  // ══════════════════════════════════════
+  if(has('cng','compressed natural gas') || carFuel.includes('cng')) {
+
+    if(has('problem','issue','dikkat','kharab','pressure','leakage','smell')) {
+      return `🟢 **CNG Car Problems:**\n\n🔴 **Gas smell in car:**\n• Immediate action: Open all windows\n• Engine band karo\n• Gas station ya mechanic pe jao\n• CNG leakage = fire hazard!\n\n🔴 **Low pressure / power loss on CNG:**\n• Empty cylinder → Refill\n• Pressure regulator issue\n• Filter choked → Replace\n\n🟡 **Difficult starting on CNG:**\n• Always start on petrol, switch after warming up\n• CNG kit calibration needed\n• Injector cleaning\n\n🟡 **Kit service:**\n• CNG kit service: Every 10,000 km or 1 year\n• Cylinder hydro test: Every 3 years (mandatory!)\n• CNG kit service cost: ₹500-1,500\n\n⚠️ **Never skip hydro test** — it's legally mandatory and safety-critical!`;
+    }
+
+    if(has('cylinder','hydro','test','hydrostatic')) {
+      return `🔋 **CNG Cylinder Hydrostatic Test:**\n\n**Kyun zaruri hai?**\nCylinder pressure check karta hai — safety ke liye mandatory\n\n**Frequency:** Every 3 years (legally mandatory under CMVR)\n\nIf test fail ho:\n• Cylinder replace karna padega\n• Cylinder cost: ₹8,000-15,000\n\n**Test centers:** Authorized CNG testing stations\n\n⚠️ Expired cylinder ke saath driving:\n• RTO challan\n• Insurance void ho sakti hai\n• Serious safety risk!`;
+    }
+
+    if(has('mileage','average','km','saving','bachta')) {
+      return `🟢 **CNG vs Petrol — Cost Comparison:**\n\nCNG price: ~₹80-95/kg (varies by city)\nPetrol price: ~₹95-110/L\n\nCNG mileage: 20-30 km/kg typically\nPetrol mileage: 12-18 km/L typically\n\n**Monthly savings (1,500 km/month):**\nPetrol cost: ~₹9,000-10,000\nCNG cost: ~₹4,000-5,000\n**Monthly saving: ~₹4,000-5,000! 💰**\n\n⚠️ Trade-offs:\n• Boot space kam hoti hai\n• Power slightly less on CNG\n• CNG filling stations petrol se kam\n• CNG kit service extra cost`;
+    }
+
+    if(has('kit','retrofit','lagwana','install')) {
+      return `🔧 **CNG Kit Installation:**\n\nSequential CNG kit (best quality): ₹55,000-75,000\nTypewriter/normal kit: ₹35,000-50,000\n\n**OEM CNG vs Retrofit:**\nOEM (factory fitted, like Maruti): Better, warranty maintained\nRetrofit: Cheaper but needs AIS certification\n\n**Mandatory requirements:**\n• AIS certified kit only\n• RTO registration compulsory\n• Insurance update karo\n\n⚠️ Non-certified kit = insurance void + legal issues!`;
+    }
+  }
+
+  // ══════════════════════════════════════
+  // ELECTRIC VEHICLE (EV)
+  // ══════════════════════════════════════
+  if(has('electric','ev','battery car','electric car','charging','charge','tata nexon ev','ola electric','punch ev','mgzs ev','zs ev') || carFuel.includes('electric')) {
+
+    if(has('range','kitna','km','anxiety','mileage')) {
+      return `🔋 **EV Range Guide (India):**\n\nReal-world range vs claimed:\n• Tata Nexon EV: claimed 312-453 km → Real: 200-280 km\n• Tata Punch EV: claimed 315-421 km → Real: 200-260 km\n• MG ZS EV: claimed 461 km → Real: 300-350 km\n• Tata Tiago EV: claimed 315 km → Real: 200-240 km\n\n**Range killers:**\n• AC use: -20 to -30% range\n• Highway speeds (>100 kmph): -25% range\n• Winter: -15 to -20% range\n• Aggressive acceleration: -30% range\n\n✅ **Maximize range:**\n• Eco mode use karein\n• Regenerative braking on\n• Pre-cool car while on charge\n• Highway pe 80-90 kmph maintain karein`;
+    }
+
+    if(has('charging','charge','charger','home charging','fast charge','dc')) {
+      return `⚡ **EV Charging Guide (India):**\n\n**Home Charging (AC):**\n• 15A socket: 7-10 hours (slow)\n• 3.3 kW home charger: 5-8 hours\n• 7.2 kW wallbox: 3-4 hours\n• Cost: ₹5-8/kWh (home electricity)\n\n**Public Charging:**\n• AC charger (slow): ₹1-15/kWh\n• DC fast charger: ₹15-25/kWh\n• DC fast charge: 0-80% in 45-60 min\n\n**Charging networks in India:**\n• Tata Power EZ Charge\n• Ather Grid\n• ChargeZone\n• BPCL Pulse\n• IOCL E-Drive\n\n💡 **Tip:** Home pe raat ko charge karein — bijli sasti hoti hai aur battery health better rehti hai!`;
+    }
+
+    if(has('battery health','battery life','degradation','replace battery')) {
+      return `🔋 **EV Battery Life & Health:**\n\n**Typical warranty:** 8 years / 1,60,000 km\n\n**Degradation pattern:**\n• Year 1-3: Very minimal (<5%)\n• Year 5: ~10-15% capacity loss\n• Year 10: ~20-25% capacity loss\n\n**Battery health tips:**\n• Daily charge limit: 80% (not 100%)\n• Minimum don't go below 10-15%\n• Avoid DC fast charging daily (occasional is fine)\n• Park in shade in summer\n• Don't charge in extreme heat\n\n**Battery replacement cost (if needed):**\n• Tata Nexon EV: ₹5-8 lakh\n• Usually covered under warranty\n\n✅ Most EVs in India have excellent battery warranty!`;
+    }
+
+    if(has('maintenance','service','cost','repair')) {
+      return `🔧 **EV Maintenance — Much Less Than ICE!**\n\n**Annual service cost:** ₹3,000-8,000 (vs ₹10,000-20,000 for petrol/diesel)\n\n**No need for:**\n• Engine oil change ❌\n• Spark plugs ❌\n• Fuel filter ❌\n• Timing belt ❌\n• Exhaust maintenance ❌\n• Clutch (automatic) ❌\n\n**Still needed:**\n• Tyre rotation and replacement ✅\n• Brake fluid check (every 2 years) ✅\n• Cabin air filter ✅\n• Windshield washer fluid ✅\n• Wiper replacement ✅\n• AC service ✅\n\n💰 **Savings:** ₹80,000-1,20,000 over 5 years vs petrol!`;
+    }
+
+    if(has('problem','issue','dikkat','error','fault','warning')) {
+      return `🚨 **Common EV Problems:**\n\n🔴 **Range suddenly dropped:**\n• Check tyre pressure\n• AC/heater usage\n• Battery temperature (extreme weather)\n• If sudden large drop → Service centre\n\n🔴 **Charging not working:**\n• Check socket/cable connection\n• Charger compatibility check\n• App se check karein (Tata EV, MG app)\n• Contact service centre\n\n🟡 **Warning lights:**\n• Battery warning: Charge immediately\n• Temperature warning: Stop, cool down\n• Traction control: Slow down\n\n🟡 **Regenerative braking not working:**\n• Software update needed\n• Brake system check\n\nEV service = authorized centre only (specialized technicians)!`;
+    }
+  }
+
+  // ══════════════════════════════════════
+  // HYBRID CARS
+  // ══════════════════════════════════════
+  if(has('hybrid','strong hybrid','self charging','hyryder','grand vitara hybrid','innova hybrid','camry') || carFuel.includes('hybrid')) {
+    return `🌿 **Hybrid Car Guide (India):**\n\n**Types of Hybrid in India:**\n• Mild Hybrid (48V): Maruti Grand Vitara, Hyundai Creta — assists engine, can't run on electric only\n• Strong Hybrid: Toyota Hyryder, Innova HyCross, Camry — can run on electric only at low speeds\n\n**Maintenance:**\n• Similar to petrol but less frequent oil changes\n• Battery (high voltage) — 8 year/1.6 lakh km warranty\n• Brake fluid check important (regenerative braking)\n• No need to worry about charging — self-charging!\n\n**Mileage (strong hybrid):**\n• Toyota Hyryder Hybrid: 20-27 km/L real world!\n• Innova HyCross: 18-24 km/L\n\n**Service cost:** Slightly higher than petrol, specialized technicians needed\n\n✅ Best for: City driving + highway mix, high mileage users`;
+  }
+
+  // ══════════════════════════════════════
+  // ENGINE PROBLEMS (ALL FUEL TYPES)
+  // ══════════════════════════════════════
+  if(has('engine','motor','overheating','garam','temp','temperature','coolant','radiator','head gasket')) {
+
+    if(has('overheating','overheat','garam','temp high','temperature')) {
+      return `🌡️ **Engine Overheating — EMERGENCY!**\n\n**Immediately:**\n1. AC band karo\n2. Heater ON karo (engine thanda karne mein help karta hai)\n3. Slow down aur pull over safely\n4. Engine band karo\n5. Minimum 30 minute wait before opening radiator cap\n\n**KABHI NAHI:**\n• Overheating mein coolant mat daalo (cracked head gasket risk)\n• Radiator cap turant mat kholo (steam burn)\n• Thande paani se hot radiator mat rinse karo\n\n**Common causes:**\n• Low coolant level\n• Radiator fan failure\n• Thermostat stuck closed\n• Water pump failure\n• Head gasket blown (most expensive!)\n\n💰 Head gasket repair: ₹15,000-40,000\nRadiator repair: ₹3,000-8,000`;
+    }
+
+    if(has('oil','tel','pressure','low oil')) {
+      return `🛢️ **Engine Oil Problems:**\n\n🔴 **Oil pressure warning light:**\n• Immediately pull over — do NOT drive!\n• Check oil level (dipstick)\n• If low: Add oil and check for leaks\n• If oil level OK but light on: Oil pump issue — tow to garage\n\n**Oil leak causes:**\n• Valve cover gasket (most common) — ₹800-2,000\n• Oil pan gasket — ₹1,500-3,500\n• Crankshaft seal — ₹2,000-5,000\n\n**Oil consumption signs:**\n• Blue smoke from exhaust\n• Frequent top-ups needed\n• Burning oil smell\n\n**Correct intervals:**\nPetrol: 8,000-10,000 km\nDiesel: 7,500-10,000 km\nCNG: 7,500-10,000 km`;
+    }
+  }
+
+  // ══════════════════════════════════════
+  // TRANSMISSION & CLUTCH
+  // ══════════════════════════════════════
+  if(has('transmission','gearbox','gear','clutch','amt','automatic','cvt','dct','imt','slip')) {
+
+    if(has('clutch','slip','plate')) {
+      return `⚙️ **Clutch Issues:**\n\nSigns of worn clutch:\n• Slipping (RPM rises but speed doesn't)\n• Burning smell on hills\n• Difficulty engaging gears\n• Clutch pedal feels different\n\nLifespan: 60,000-1,20,000 km (depends on driving)\n\n💰 Clutch replacement cost:\nMaruti/Hyundai: ₹6,000-12,000\nHonda/Toyota: ₹10,000-18,000\nDiesel cars: ₹12,000-22,000\n\n**Extend clutch life:**\n• Don't ride clutch\n• Avoid half-clutch at traffic\n• Don't use clutch as brake\n• Double clutch not needed in modern cars`;
+    }
+
+    if(has('automatic','auto','amt','cvt','dct','torque converter')) {
+      return `🔄 **Automatic Transmission Guide:**\n\n**Types in Indian market:**\n• AMT (Easy-R): Budget friendly, slight jerk — Maruti, Tata\n• CVT: Smooth, good mileage — Honda, Hyundai\n• DCT (DSG): Sporty, quick shifts — VW, Skoda, Hyundai\n• Torque Converter AT: Smooth, expensive — Toyota, Honda\n• iMT: Semi-auto (no clutch pedal) — Hyundai\n\n**Maintenance:**\n• ATF (Automatic Transmission Fluid): Change every 40,000-60,000 km\n• Don't tow in N mode\n• Warm up in winter before driving\n\n💰 ATF change: ₹3,000-8,000\nTransmission repair: ₹20,000-80,000+ (expensive!)`;
+    }
+  }
+
+  // ══════════════════════════════════════
+  // SUSPENSION & STEERING
+  // ══════════════════════════════════════
+  if(has('suspension','shock','absorber','spring','strut','steering','pull','drift','bouncy','rough ride','pothole','khadi sadak')) {
+    return `🛞 **Suspension & Steering:**\n\n**Signs of worn shock absorbers:**\n• Excessive bouncing after bumps\n• Car dips forward while braking\n• Uneven tyre wear\n• Noise over speed bumps\n• Body roll in corners\n\n**Steering issues:**\n• Car pulling to one side → Wheel alignment needed\n• Steering wheel vibration → Wheel balance + alignment\n• Heavy steering → Power steering fluid check\n• Clicking in steering → Tie rod end issue\n\n💰 **Costs:**\nShock absorbers (pair): ₹2,500-8,000\nWheel alignment: ₹400-600\nWheel balancing: ₹100-200/wheel\nTie rod replacement: ₹2,000-5,000\n\n⚠️ Indian roads mein 60,000-80,000 km pe shock absorbers check karein!`;
+  }
+
+  // ══════════════════════════════════════
+  // ELECTRICAL PROBLEMS
+  // ══════════════════════════════════════
+  if(has('electrical','wiring','short circuit','fuse','fusebox','light','headlight','indicator','horn','central locking','window','power window')) {
+
+    if(has('short circuit','spark','wire','wiring','fire','aag')) {
+      return `⚡ **Electrical Short Circuit — URGENT:**\n\n**Signs:**\n• Burning smell from inside car\n• Fuses blowing repeatedly\n• Random electrical failures\n• Smoke from dashboard or wires\n\n**IMMEDIATE ACTION:**\n1. Engine band karo\n2. Car se bahar niklo\n3. Fire extinguisher use karein if smoke/fire\n4. Emergency services call karein\n\n**Prevention:**\n• Cheap aftermarket accessories avoid karein\n• Proper wiring by certified electrician\n• Regular checkup of wiring loom\n• Don't DIY car electrical work\n\n💰 Wiring repair: ₹2,000-15,000 depending on damage`;
+    }
+
+    if(has('battery','dead battery','jump start','jump','boost')) {
+      return `🔋 **Jump Starting a Car:**\n\n**Requirements:** Jumper cables + working car\n\n**Steps:**\n1. Both cars OFF karein\n2. Red cable: Dead battery + → Working battery +\n3. Black cable: Working battery - → Earth/metal on dead car (NOT battery -)\n4. Working car start karein, 2-3 min run karein\n5. Dead car start karein\n6. Reverse order mein cables hatao\n\n⚠️ **Precautions:**\n• Sparks se daro mat — safe process hai\n• Modern cars mein jump start carefully (ECU sensitive)\n• After jump start: 30+ min drive karein to charge battery\n\n💰 New battery: ₹3,000-6,000\nAmaron/Exide best brands hain India mein`;
+    }
+  }
+
+  // ══════════════════════════════════════
+  // AC PROBLEMS (DETAILED)
+  // ══════════════════════════════════════
+  if(has('ac','a.c.','air conditioning','cooling','cool nahi','thanda nahi','compressor','condenser','evaporator','refrigerant','gas','freon')) {
+
+    if(has('not cool','cool nahi','thanda nahi','warm','garam','nahi tha','not working')) {
+      return `❄️ **AC Not Cooling — Diagnosis:**\n\n🔴 **Check first:**\n1. AC button ON hai?\n2. Cabin filter check karein (choke hone par airflow kam)\n3. Condenser ke saamne koi blockage?\n\n**Low refrigerant (gas):**\n• AC thoda cool karta hai but properly nahi\n• Refill: ₹800-1,500\n• Leak check: ₹500-1,000 extra\n\n**Compressor issue:**\n• AC bilkul kaam nahi karta\n• Compressor noise\n• Cost: ₹8,000-25,000 (expensive!)\n\n**Condenser problem:**\n• Front bumper mein hota hai — damage from stones\n• Cost: ₹3,000-8,000\n\n**Evaporator issue:**\n• Sweet/musty smell from AC\n• AC cools intermittently\n• Cost: ₹6,000-15,000\n\n💡 **Tip:** AC service every 2 years karein — saves major issues!`;
+    }
+
+    if(has('smell','bau','odor','musty','fungus')) {
+      return `❄️ **AC Smell Problems:**\n\n**Musty/mold smell:**\n• Cabin air filter dirty → Replace (₹200-400)\n• Evaporator mold → AC disinfection spray\n\n**AC disinfection process:**\n1. Cabin filter replace karein\n2. Anti-fungal spray (evaporator pe)\n3. ₹500-1,500 at service centre\n\n**Prevention:**\n• AC band karne se 2-3 min pehle: Blower ON, AC OFF\n• Parking pe windows thoda khuli rakhein\n• Cabin filter every 15,000 km change karein\n\n**Chemical smell:**\n• Coolant leak ho sakta hai\n• Service centre pe jao`;
+    }
+  }
+
+  // ══════════════════════════════════════
+  // BRAKES (DETAILED)
+  // ══════════════════════════════════════
+  if(has('brake','brakes','stopping','ruk','disc','drum','abs','abs light','brake fluid','brake oil','parking brake','handbrake')) {
+
+    if(has('sound','noise','awaaz','squealing','grinding','metal','chetavni')) {
+      return `🛑 **Brake Noise Diagnosis:**\n\n**Squealing sound:**\n• Brake pads wear indicator touching disc\n• Replace SOON — ₹1,500-4,000 per axle\n\n**Grinding metal sound:**\n• EMERGENCY! Pads completely gone\n• Metal on metal = disc damage\n• Replace IMMEDIATELY\n\n**Vibration while braking:**\n• Warped brake discs\n• Disc resurfacing: ₹500-1,000 per disc\n• Disc replacement: ₹2,000-5,000 per disc\n\n**Soft/spongy pedal:**\n• Air in brake line → Bleeding needed\n• Brake fluid leak\n• Serious safety issue — don't drive!\n\n**Abs light on:**\n• ABS sensor issue\n• Usually not emergency but check soon\n• Cost: ₹1,500-4,000`;
+    }
+
+    if(has('fluid','brake fluid','brake oil','dot3','dot4')) {
+      return `🔴 **Brake Fluid Guide:**\n\nChange interval: Every **30,000 km or 2 years**\n\n**Types:**\n• DOT 3: Most Indian cars\n• DOT 4: Performance/newer cars (can replace DOT 3)\n• DOT 5.1: High performance\n\n**Signs of old brake fluid:**\n• Spongy brake pedal\n• Brakes fade on long downhills\n• Fluid looks dark brown\n\n**Why change it?**\nBrake fluid hygroscopic (paani absorb karta hai) → Boiling point kam hoti hai → Brake fade\n\n💰 Brake fluid change: ₹500-1,200 (labour + fluid)`;
+    }
+  }
+
+  // ══════════════════════════════════════
+  // TYRES (DETAILED)
+  // ══════════════════════════════════════
+  if(has('tyre','tire','tyres','tires','puncture','flat','balancing','alignment','rotate','rotation','sidewall','tread','bead')) {
+
+    if(has('puncture','flat','flat tyre','tubeless')) {
+      return `🔄 **Tyre Puncture Guide:**\n\n**Tubeless tyre puncture:**\n• Plug repair (roadside): ₹50-100 — temporary fix\n• Mushroom plug repair (proper): ₹200-300 — permanent fix\n• Never use just the external plug for long term!\n\n**Run-flat tyres:**\n• 80 km tak 50 kmph pe drive kar sakte hain\n• Regular repair nahi hoti — replace karna padta hai\n• Cost: ₹8,000-15,000 per tyre!\n\n**Tyre Change (full replacement):**\nMid-size cars: ₹3,500-5,500 per tyre\nPremium: ₹5,000-8,000 per tyre\n\n**Sidewall puncture/bulge:**\n• REPLACE immediately — cannot be repaired!\n• Sidewall damage = blowout risk at high speed\n\n⚠️ **Tyre pressure check:** Always after puncture repair!`;
+    }
+
+    if(has('brand','konsa','recommend','which tyre','best tyre')) {
+      return `🔄 **Best Tyre Brands for India:**\n\n**Top tier (premium performance):**\n• Michelin — Best grip, expensive\n• Bridgestone — Good balance of grip and mileage\n• Goodyear — Popular, reliable\n\n**Mid tier (best value):**\n• MRF — Made in India, excellent quality, good mileage\n• Apollo — Very popular, good for Indian roads\n• CEAT — Affordable, decent quality\n• JK Tyres — Budget friendly\n\n**For Indian roads:**\nMRF and Apollo best hain — designed for our road conditions\n\n**Budget guide:**\nMRF/Apollo 185/65 R15: ₹3,500-4,500\nMichelin equivalent: ₹5,500-7,000\n\n💡 Tip: 4 tyres same brand use karein for balanced handling!`;
+    }
+  }
+
+  // ══════════════════════════════════════
+  // INSURANCE — COMPREHENSIVE
+  // ══════════════════════════════════════
+  if(has('insurance','bima','policy','idv','ncb','zero dep','claim','premium','renew','renewal','third party','comprehensive','add on','add-on','pa cover','engine protect','rsa','consumable','rti','return to invoice')) {
+
+    if(has('claim','accident','damage','thaka','crash','hit','collide','haadsa')) {
+      return `🛡️ **Accident Insurance Claim Process:**\n\n**Immediately after accident:**\n1. Photos & videos of damage le lo\n2. Other party ki RC, insurance details lo\n3. FIR file karein (mandatory for insurance claim)\n4. Insurer ko 24-48 hours mein inform karein\n\n**Claim types:**\n• Cashless: Insurer directly pays garage\n• Reimbursement: Aap pay karo, insurer refund karo\n\n**Documents needed:**\n• Claim form\n• RC copy\n• DL copy\n• FIR copy (if applicable)\n• Repair estimates/bills\n\n⚠️ **Small damage decision:**\nDamage < ₹5,000 → Consider NOT claiming\nNCB loss = much more expensive over years!\n\n**Example:** ₹3,000 claim = Lose 20% NCB = ₹2,000-4,000 extra premium/year for 5 years!`;
+    }
+
+    if(has('third party','tp','mandatory','compulsory')) {
+      return `📋 **Third Party Insurance — Everything:**\n\nThird Party (TP) insurance is **legally mandatory** in India (Motor Vehicles Act).\n\n**What it covers:**\n✅ Injury/death to third person\n✅ Damage to third party property\n✅ Unlimited liability for injury/death\n✅ ₹7.5 lakh limit for property damage\n\n**What it does NOT cover:**\n❌ Damage to your own car\n❌ Your own injuries\n❌ Theft of your car\n\n**Premium:** Fixed by IRDA\n• Cars < 1000cc: ₹2,094/year\n• 1000-1500cc: ₹3,416/year\n• >1500cc: ₹7,897/year\n\n**Penalty for no insurance:**\nFirst offence: ₹2,000 fine OR 3 months jail\nRepeat: ₹4,000 fine OR 3 months jail`;
+    }
+
+    if(has('comprehensive','full cover','own damage')) {
+      return `🛡️ **Comprehensive Insurance Guide:**\n\n**Covers:**\n✅ Third party liability\n✅ Own car damage (accident)\n✅ Theft\n✅ Natural calamities (flood, earthquake)\n✅ Fire\n✅ Vandalism\n\n**Premium factors:**\n• Car age and model\n• IDV (Insured Declared Value)\n• City\n• NCB discount\n• Add-ons selected\n\n**Must-have add-ons:**\n🔴 Zero Depreciation — 100% parts cost\n🔴 Engine Protection — flood/oil leak\n🔴 Personal Accident — ₹15 lakh cover\n🟡 RSA — 24/7 roadside help\n🟡 Consumables — oil, nuts, bolts\n🟡 Return to Invoice — total loss/theft\n\n💡 **Save 30-40%:** Buy online vs dealer!`;
+    }
+
+    if(has('zero dep','zero depreciation','zerodep','zero depr')) {
+      return `🛡️ **Zero Depreciation — Explained:**\n\n**Without Zero Dep:**\nClaim pe parts ki depreciation deduct hoti hai:\n• Plastic parts: 50% depreciation\n• Metal parts: 0-10%\n• Rubber parts: 50%\n• Glass: 0% (no depreciation)\n\n**Example without ZD:**\nBumper replacement: ₹8,000\nInsurer pays: ₹4,000 (50% depreciation deducted)\nYou pay: ₹4,000 from pocket\n\n**With Zero Dep:**\nInsurer pays full ₹8,000!\n\n**Cost:** +10-15% on basic premium\n**Best for:** Cars under 5 years old\n\n**Availability:** Max 5 years old car, max 2 claims/year`;
+    }
+
+    if(has('ncb','no claim','bonus')) {
+      return `💰 **NCB — No Claim Bonus:**\n\n**NCB scale:**\n• 1 year no claim: 20% discount\n• 2 years: 25%\n• 3 years: 35%\n• 4 years: 45%\n• 5+ years: **50% discount!**\n\n**NCB protection add-on:**\nPremium mein add-on leta hai jo 1 claim per year mein NCB protect karta hai!\nCost: ₹200-500 extra — worth it!\n\n**Important rules:**\n• NCB = aapka hai, car ka nahi\n• New car kharidi → NCB transfer hogi\n• Claim kiya → NCB 0 se start\n\n**Calculate savings:**\n₹10,000 premium × 50% NCB = ₹5,000 saved every year!`;
+    }
+
+    if(has('idv','insured declared','market value')) {
+      return `📊 **IDV — Very Important!**\n\nIDV = Insured Declared Value = Claim amount on total loss/theft\n\n**Standard depreciation:**\n• New (< 6 months): 5% less\n• 6 months-1 year: 15% less\n• 1-2 years: 20% less\n• 2-3 years: 30% less\n• 3-4 years: 40% less\n• 4-5 years: 50% less\n• 5+ years: Mutually agreed\n\n**Dealer trick:**\nLow IDV set karte hain → Premium sasta → But claim pe bahut kam milta hai!\n\n**Always:**\nMarket value check karein (CarWale, OLX)\nIDV = realistic market price set karein\n\n**Higher IDV = slightly higher premium but full protection!**`;
+    }
+
+    if(has('renew','renewal','expire','expired')) {
+      if(ins && ins.expiry) {
+        const days = daysFromNow(ins.expiry);
+        return `🛡️ **Insurance Renewal — ${carName}:**\n\n${days<0?`❌ **EXPIRED ${Math.abs(days)} days ago!**\nTurant renew karein — driving illegal hai!\nLapsed insurance: ₹2,000 challan + possible 3 months jail`:days<30?`⚠️ **Expires in ${days} days!**\nAb renew karein — last minute pe late ho sakte hain.`:`✅ Valid for ${days} more days (${fmtDate(ins.expiry)})\nReminder: 30 days pehle renew karein discount ke liye.`}\n\n**Renewal tips:**\n• Compare 5+ insurers online\n• NCB certificate lo purane insurer se\n• IDV verify karein market value se\n• Same add-ons rakhein ya upgrade karein\n• Online = 30-40% cheaper!`;
+      }
+      return `🛡️ **Insurance Renewal Tips:**\n• 30 days pehle renew karein (discount milta hai)\n• Online renew = 30-40% cheaper than agent\n• NCB certificate lena mat bhoolein\n• IDV market value se match karo\n• Platforms: PolicyBazaar, Coverfox, insurer websites\n• Zero Dep add-on zaroor rakhein`;
+    }
+  }
+
+  // ══════════════════════════════════════
+  // TRAFFIC LAWS & PENALTIES (India MV Act)
+  // ══════════════════════════════════════
+  if(has('traffic','challan','fine','law','rule','penalty','police','license','licence','dl','driving licence','rc','registration','rto','permit','fitness','puc','pollution','mvact','motor vehicle','helmet','seat belt','speed','drunk','dui','drunken')) {
+
+    if(has('challan','fine','penalty','amount')) {
+      return `⚖️ **Traffic Challan Amounts (Motor Vehicles Act 2019):**\n\n**Most common fines:**\n• No insurance: ₹2,000 (1st) / ₹4,000 (repeat)\n• Without licence: ₹5,000\n• Driving on expired licence: ₹500\n• No helmet (2-wheeler): ₹1,000 + 3 months DL suspension\n• No seat belt: ₹1,000\n• Using mobile while driving: ₹1,500-5,000\n• Drunk driving: ₹10,000 + 6 months jail\n• Overspeeding: ₹1,000-2,000 (LMV), ₹4,000 (others)\n• Red light jumping: ₹1,000-5,000\n• No PUC: ₹10,000 or 6 months jail!\n• Dangerous driving: ₹1,000-5,000\n• Racing on public road: ₹5,000\n• No RC: ₹5,000\n• Overloading vehicle: ₹2,000 + ₹1,000/ton\n• Wrong side driving: ₹1,000-5,000`;
+    }
+
+    if(has('puc','pollution','emission','bs6','bs4')) {
+      return `🌿 **PUC Certificate (Pollution Under Control):**\n\n**Mandatory:** Motor Vehicles Act ke under\n\n**Validity:**\n• New car (BS6): 1 year first PUC\n• After 1 year: Every 6 months renewal\n\n**Test parameters (BS6 petrol):**\n• CO: < 0.3%\n• HC: < 200 ppm\n\n**Penalty for no PUC:**\n₹10,000 fine OR 6 months jail (strict!)\n\n**How to get PUC:**\nPetrol pumps, authorized test centres\nCost: ₹60-100 for cars\n\n**PUC test fail hona:**\n• Engine tuning needed\n• Catalytic converter check\n• Air filter change\n• Oxygen sensor check`;
+    }
+
+    if(has('speed limit','speed','speeding','over speed','highway speed')) {
+      return `🚦 **Speed Limits in India (MV Act 2019):**\n\n**Urban areas:**\n• Cars: 50 kmph\n• Near schools/hospitals: 25 kmph\n\n**State highways:**\n• Cars: 70 kmph\n\n**National highways:**\n• Cars: 100 kmph max\n• Cars with trailer: 65 kmph\n\n**Expressways:**\n• Cars: 120 kmph (some allow up to 130)\n\n**Speed camera locations:**\n• Toll plazas\n• City intersections\n• Highway stretches\n\n**Penalty:**\n• LMV overspeeding: ₹1,000-2,000\n• Heavy vehicles: ₹4,000`;
+    }
+
+    if(has('drunk','dui','alcohol','drinking and driving','drunken')) {
+      return `🚨 **Drunk Driving Laws (India):**\n\nLegal limit: 30 mg alcohol per 100 mL blood\n\n**Penalties:**\n• First offence: ₹10,000 fine + up to 6 months jail\n• Second offence: ₹15,000 fine + 2 years jail\n\n**Testing:** Breathalyzer test — police ka adhikar\n\n**Consequences:**\n• DL suspension\n• Insurance claim void (agar accident hua)\n• Criminal record\n\n**Simple rule:** Agar piya hai — mat chalao!\nCab/auto/designated driver use karein.`;
+    }
+
+    if(has('seat belt','seatbelt','belt')) {
+      return `🔒 **Seat Belt Laws (India):**\n\nMandatory for:\n• Driver — always\n• Front passenger — always\n• Rear passengers — mandatory since 2022\n\n**Penalty:** ₹1,000 fine\n\n**Child safety:**\n• Kids under 4 years: Child seat mandatory\n• Kids 4-12 years: Rear seat with belt\n\n**Airbags work better with seat belts!**\nWithout belt, airbag itself can cause serious injury.`;
+    }
+
+    if(has('mobile','phone','call','driving while')) {
+      return `📱 **Mobile Phone While Driving:**\n\nStrictly prohibited by MV Act\n\n**Penalty:** ₹1,500-5,000\n\n**Allowed:** Hands-free (Bluetooth, car kit)\n\n**Best practice:**\n• Phone ko Do Not Disturb mode pe rakhein\n• Mount use karein navigation ke liye\n• Emergency call = pull over first\n\n**Stats:** Mobile phone distraction = 4x more accident risk than drunk driving!`;
+    }
+
+    if(has('helmet','two wheeler','bike','scooter')) {
+      return `🪖 **Helmet Laws:**\n\nMandatory for:\n• Driver (2-wheeler)\n• Pillion rider\n\n**Penalty:** ₹1,000 fine + 3 months DL suspension\n\n**ISI mark mandatory**\nNon-ISI helmet = additional fine\n\n**States with strict enforcement:**\nDelhi, Mumbai, Bangalore, Chennai — cameras + police checkpoints\n\n✅ ISI certified helmet: ₹500-2,000\n💰 Fine vs protection — helmet clearly wins!`;
+    }
+
+    if(has('rc','registration certificate','vehicle registration')) {
+      return `📋 **RC (Registration Certificate) Rules:**\n\n**Validity:**\n• New car: 15 years\n• Renewal after 15 years: 5 year validity each time\n\n**Re-registration after 15 years:**\n• Fitness certificate required\n• Emission test\n• Applicable in some states for old vehicles\n\n**Carrying RC:**\n• Physically or DigiLocker app accepted\n\n**Lost RC:**\n• Apply at RTO for duplicate\n• Cost: ₹500-1,000\n\n**Transfer on sale:**\n• NOC from current RTO if different state\n• Transfer within 30 days of purchase`;
+    }
+
+    if(has('fitness certificate','fc','fitness')) {
+      return `✅ **Fitness Certificate:**\n\nMandatory for all commercial vehicles.\n\n**Private cars:** Needed after 15 years for re-registration\n\n**Inspection includes:**\n• Brakes\n• Lights\n• Steering\n• Emissions (PUC)\n• Tyres\n• Safety features\n\nIssued by: RTO or authorized testing agencies\nValidity: 1-2 years for commercial vehicles`;
+    }
+
+    if(has('e-challan','echallan','pay challan','online challan')) {
+      return `💻 **E-Challan — How to Pay:**\n\n**Online payment:**\n1. echallan.parivahan.gov.in\n2. Vehicle number enter karein\n3. Pending challans dikhenge\n4. Online payment karein (card/UPI/netbanking)\n\n**Check by DL number:**\nmparivahan.gov.in app\n\n**Discount:**\nKuch states mein quick payment pe 30-50% discount\n\n**Ignore karne par:**\n• Court notice\n• RC renewal block\n• Increased fine\n\n⚠️ Never ignore challans — interest add hota rehta hai!`;
+    }
+  }
+
+  // ══════════════════════════════════════
+  // DOCUMENTS & LEGAL
+  // ══════════════════════════════════════
+  if(has('document','driving licence','dl','license','renew licence','learner','learning licence','ll','form 4','aadhaar','address proof')) {
+
+    if(has('driving licence','dl','license','renew')) {
+      return `📋 **Driving Licence Guide:**\n\n**New DL process:**\n1. Learner's Licence (LL) first — online apply\n2. LL validity: 6 months\n3. After 30 days of LL: Apply for permanent DL\n4. Driving test at RTO\n5. Fee: ₹200-400\n\n**DL validity:**\n• Age < 40: 20 years\n• Age 40-50: 10 years\n• Age > 50: 5 years\n\n**Renewal:**\n• Apply 1 year before expiry\n• Online: parivahan.gov.in\n• Documents: Application form, medical certificate (age 40+), address proof, photo\n\n**International DL:**\nValid in 150+ countries via IDP (₹1,000)`;
+    }
+  }
+
+  // ══════════════════════════════════════
+  // BILL ANALYSIS
+  // ══════════════════════════════════════
+  if(has('bill','estimate','overcharge','loot','thagi','expensive','kitna sahi','fair','check bill','analyze')) {
+    return `🧾 **Bill Analysis Guide:**\n\n**Always overcharged items:**\n❌ Engine Flush — Skip (₹500-800 wasted)\n❌ Teflon coating — Gimmick (₹2,000-8,000 wasted)\n❌ Fuel injector cleaning — Only if specific symptoms\n❌ AC duct cleaning — Rarely needed\n❌ Throttle body cleaning — Only if rough idle\n❌ Underbody coating — Optional, check price\n❌ Extended warranty at showroom — Overpriced\n\n**Legitimate items:**\n✅ Engine oil + oil filter (together always)\n✅ Air filter (per schedule)\n✅ Spark plugs (40,000 km)\n✅ Brake pads (when worn)\n✅ Coolant (40,000 km)\n✅ Wheel alignment + balance (as needed)\n\n**Use our Bill Review tool:**\nTools tab → Bill Review → Enter each item → Get analysis!\n\nYa idhar paste karo aapka bill — main check karta hoon! 🔍`;
+  }
+
+  // ══════════════════════════════════════
+  // SERVICE SCHEDULES
+  // ══════════════════════════════════════
+  if(has('schedule','interval','every','har','kitne km','service schedule','maintenance schedule')) {
+    const fuel = carFuel || 'petrol';
+    return `📅 **Complete Service Schedule:**\n\n**Every 10,000 km / 1 year:**\n• Engine oil + oil filter ✅ (must do)\n• Tyre pressure check\n• All fluid levels check\n• Air filter inspect\n\n**Every 20,000 km:**\n• Air filter replace\n• Cabin AC filter\n• Brake system visual check\n\n**Every 30,000 km:**\n• Brake fluid replace\n• Fuel filter (diesel/CNG: 20,000 km)\n• Coolant check (top up if needed)\n\n**Every 40,000 km:**\n• Spark plugs (petrol)\n• Glow plugs check (diesel)\n• Brake pads measure/replace\n• Transmission fluid check\n\n**Every 60,000 km:**\n• Transmission fluid replace\n• Coolant full change\n• Timing belt inspect (80k km: change)\n\n**Every 80,000-100,000 km:**\n• Timing belt/chain replace (CRITICAL!)\n• Clutch check (manual)\n• Shock absorbers check`;
+  }
+
+  // ══════════════════════════════════════
+  // BUYING / SELLING CAR
+  // ══════════════════════════════════════
+  if(has('buy','kharid','sell','becho','used car','second hand','purani car','resale','new car')) {
+
+    if(has('used','second hand','purani','second-hand')) {
+      return `🚗 **Used Car Buying Checklist:**\n\n**Documents to verify:**\n• RC (Registration Certificate) — original\n• Insurance (valid)\n• PUC certificate\n• Service history records\n• NOC if from different state\n• Form 28/29/30 (transfer forms)\n• Loan NOC if car had loan\n\n**Physical inspection:**\n• Check for accident marks/panel gaps\n• Underbody rust check\n• Tyre condition + matching brand\n• Engine oil color (should be amber, not black)\n• Start engine — smoke, noise check\n• Test drive in city and highway\n\n**Online checks:**\n• RC details: vahan.nic.in\n• Accident history: some insurers provide\n• Stolen vehicle check: police helpline\n\n⚠️ Always use a trusted mechanic for pre-purchase inspection (₹500-1,500)!`;
+    }
+  }
+
+  // ══════════════════════════════════════
+  // MONSOON / FLOOD DRIVING
+  // ══════════════════════════════════════
+  if(has('rain','baarish','flood','barish','monsoon','waterlogging','paani','water crossing')) {
+    return `🌧️ **Monsoon Car Safety:**\n\n**Before monsoon:**\n• Wiper blades replace karein\n• AC check karein (defog)\n• Battery check\n• Tyre tread check (min 1.6mm)\n• Brake fluid replace if due\n\n**Flooded road:**\n• Water level > door sill = DON'T enter!\n• Engine ke liye dangerous\n• Hydro lock = engine destroy (₹50,000+ repair)\n• Insurance bhi cover nahi karta without engine protection!\n\n**If you drove through water:**\n• Brakes slowly apply while moving to dry them\n• Engine check immediately\n• Check oil dipstick for water (milky appearance)\n\n**Engine Protection add-on:**\nFlood ke baad claim ke liye Engine Protection mandatory hai!\nBina iske insurance company claim reject kar sakti hai.`;
+  }
+
+  // ══════════════════════════════════════
+  // CAR CARE TIPS
+  // ══════════════════════════════════════
+  if(has('care','maintenance','rakhkhav','protect','long life','life extend','tips')) {
+    return `🌟 **Car Long Life Tips:**\n\n**Daily habits:**\n• Smooth driving — avoid sudden acceleration/braking\n• Let engine warm up 30 seconds before moving\n• Don't rev engine cold\n• Park in shade (UV damage to paint + interior)\n\n**Weekly:**\n• Tyre pressure check\n• Water level under bonnet\n• Clean bird droppings immediately (damages paint!)\n\n**Monthly:**\n• Wash undercarriage (rust prevention)\n• AC filter check\n• Brake fluid, coolant visual check\n\n**Yearly:**\n• Full service on schedule\n• Battery terminal cleaning\n• Cabin air filter\n• Wiper replacement\n\n**Never:**\n• Skip oil change timing\n• Ignore warning lights\n• Drive with low tyre pressure\n• Use cheap fuel (unbranded petrol/diesel)`;
+  }
+
+  // ══════════════════════════════════════
+  // APP USAGE
+  // ══════════════════════════════════════
+  if(has('app','kaise use','how to','features','guide','help','tutorial','tabs')) {
+    return `📱 **CarBillHelper App Guide:**\n\n🏠 **Home:** Car health score, upcoming service alerts, quick stats\n\n🚗 **My Cars:** Multiple cars add karein, ek tap se switch karein\n\n🔧 **Service:** Har service ka record — date, KM, bill, garage\n\n🧾 **Tools:**\n• Bill Review — enter karo, overcharge detect hoga\n• Service Advisory — KM aur symptoms se advice\n\n⚙️ **Parts:** Har part ka replacement track karein with health %\n\n📁 **Docs:**\n• Insurance coverage details (covered/not covered)\n• RC, PUC, Fitness certificate with expiry alerts\n• Warranty tracker\n\n🤖 **AI Help:** Main hoon! Koi bhi sawaal poochhein 😊\n\n**Tip:** Car add karne ke baad AI personalized answers deta hai!`;
+  }
+
+  // ══════════════════════════════════════
+  // SPECIFIC CAR BRANDS
+  // ══════════════════════════════════════
+  if(has('maruti','suzuki','swift','wagonr','wagon r','baleno','brezza','ertiga','fronx','dzire','alto','celerio','ignis','jimny','grand vitara','xl6')) {
+    const model = has('swift')?'Swift':has('wagonr','wagon r')?'WagonR':has('baleno')?'Baleno':has('brezza')?'Brezza':has('ertiga')?'Ertiga':has('fronx')?'Fronx':has('dzire')?'Dzire':has('alto')?'Alto K10':has('jimny')?'Jimny':has('grand vitara')?'Grand Vitara':'Maruti car';
+    return `🚗 **${model} Maintenance Guide:**\n\n**Service intervals:**\n• Oil change: Every 10,000 km or 1 year\n• Authorized centre vs local mechanic: Both fine for non-warranty cars\n\n**Common oversold items at Maruti ARENA:**\n❌ Engine flush — Skip\n❌ Teflon/Ceramic coating — Skip\n❌ Extended warranty at delivery — Overpriced\n❌ Rust protection — Usually unnecessary\n\n**Genuine parts:** MSIL (Maruti Suzuki India Ltd) branded parts\n**Good alternatives:** Denso, Bosch for filters\n\n**Service cost (approx):**\n• General service: ₹2,500-4,500\n• Major (40k km): ₹6,000-12,000\n\n**Customer care:** 1800-102-1800 (toll free)`;
+  }
+
+  if(has('hyundai','creta','i20','venue','verna','tucson','alcazar','exter','aura','grand i10')) {
+    return `🚗 **Hyundai Service Guide:**\n\n**Service intervals:**\n• First service: 1,000 km (free)\n• Regular: Every 10,000 km\n\n**Common issues:**\n• Creta: Vibration at idle → Engine mount check\n• i20 diesel: DPF clogging\n• Venue: AC compressor noise (warranty claim)\n\n**Avoid at Hyundai service:**\n❌ Hyundai Genuine Accessories (overpriced)\n❌ Interior protection packages\n\n**Warranty:** 3 years standard + 2 years extended available\n\n**Service cost:**\n• General: ₹3,500-6,000\n• Major (40k): ₹8,000-15,000\n\n**Customer care:** 1800-11-4645`;
+  }
+
+  if(has('tata','nexon','harrier','safari','punch','altroz','tigor','tiago','curvv')) {
+    return `🚗 **Tata Motors Service Guide:**\n\n**Service intervals:**\n• First service: 500-1,000 km\n• Regular: Every 10,000 km\n\n**Tata specific tips:**\n• Nexon EV: Software updates important — get at service centre\n• Harrier/Safari diesel: Turbo intercooler check\n• Punch: Excellent city car, low maintenance\n\n**Warranty:** 3 years standard | Battery: 8 years (EV)\n\n**EV service:** Only authorized Tata EV centres\n\n**Service cost:**\n• General: ₹2,500-5,000\n• Major: ₹6,000-12,000\n\n**Customer care:** 1800-209-7979`;
+  }
+
+  if(has('honda','city','amaze','elevate','wr-v','jazz')) {
+    return `🚗 **Honda Service Guide:**\n\n**Service intervals:**\n• First service: 500-1,000 km\n• Regular: Every 10,000 km\n\n**Honda specific:**\n• Honda i-VTEC: Excellent engine, low maintenance\n• City hybrid: Specialized service only at Honda centre\n• Genuine Honda engine oil recommended for first 3 years\n\n**Common Honda issues:**\n• City: Air conditioning compressor at high km\n• Amaze: Turbine noise (diesel variant)\n\n**Service cost:**\n• General: ₹3,000-5,500\n• Major: ₹8,000-16,000\n\n**Customer care:** 1800-113-121`;
+  }
+
+  // ══════════════════════════════════════
+  // COST QUERIES
+  // ══════════════════════════════════════
+  if(has('kitna','cost','price','rate','lagega','paisa','rupee','₹','amount','charge','fee','estimate')) {
+    return `💰 **Common Repair Costs (India 2024):**\n\n**Regular maintenance:**\n• Oil change (mineral): ₹800-1,500\n• Oil change (synthetic): ₹2,500-4,500\n• Air filter: ₹300-700\n• Cabin filter: ₹200-400\n• Spark plugs (set of 4): ₹500-2,500\n• Wheel alignment: ₹400-600\n• Wheel balancing: ₹100-200/wheel\n\n**Repairs:**\n• Battery: ₹3,500-6,000\n• Brake pads (per axle): ₹1,500-4,000\n• Clutch: ₹7,000-20,000\n• AC gas refill: ₹800-1,500\n• AC compressor: ₹8,000-25,000\n• Shock absorber (pair): ₹2,500-8,000\n• Tyre (per piece): ₹3,500-5,500\n\n**Major work:**\n• Timing belt: ₹3,000-8,000\n• Head gasket: ₹15,000-40,000\n• Clutch: ₹8,000-20,000\n• Transmission repair: ₹20,000-80,000+`;
+  }
+
+  // ══════════════════════════════════════
+  // DEFAULT — Smart context aware
+  // ══════════════════════════════════════
+  if(car) {
+    return `🤖 "${raw.slice(0,60)}${raw.length>60?'...':''}" — Is baare mein detail batao!\n\nMain ${carName} ke baare mein help kar sakta hoon:\n\n🔧 **Service:** "4th service mein kya karna chahiye?"\n⛽ **Fuel:** "${carFuel} mileage improve tips"\n🛑 **Problems:** "brake noise", "AC thanda nahi", "overheating"\n🛡️ **Insurance:** "IDV", "zero dep", "claim process"\n⚖️ **Laws:** "challan amount", "PUC", "speed limit"\n💰 **Costs:** "oil change kitne mein hoga?"\n\nKya specific problem ya sawaal hai? 😊`;
+  }
+
+  return `🤖 Sawaal poochha hai: "${raw.slice(0,60)}${raw.length>60?'...':''}"\n\nMain help kar sakta hoon:\n\n🔧 **Service & Repair** — oil change, brake, AC, battery\n⛽ **Fuel types** — petrol, diesel, CNG, EV problems\n🛡️ **Insurance** — IDV, NCB, Zero Dep, claim\n⚖️ **Traffic Laws** — challan, speed limit, PUC, DL\n💰 **Repair Costs** — fair price guide\n🚗 **Specific Cars** — Maruti, Hyundai, Tata, Honda...\n\nApni car add karein better answers ke liye!\nOr seedha poochhein — main ready hoon! 💬`;
+}
+
+function sendAIMessage(){
+  const input = document.getElementById('aiInput');
+  const msg = input.value.trim();
+  if(!msg) return;
+  const chat = document.getElementById('aiChat');
+  chat.innerHTML += `<div class="ai-msg user">${msg.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>`;
+  input.value = '';
+  const typingId = 'typing_' + Date.now();
+  chat.innerHTML += `<div class="ai-msg typing" id="${typingId}"><span class="ai-typing-dot"></span><span class="ai-typing-dot"></span><span class="ai-typing-dot"></span></div>`;
+  chat.scrollTop = chat.scrollHeight;
+  const delay = 700 + Math.random() * 800;
+  setTimeout(() => {
+    const typing = document.getElementById(typingId);
+    if(typing) typing.remove();
+    const response = getAIResponse(msg);
+    const formatted = response
+      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+      .replace(/\n/g, '<br>');
+    chat.innerHTML += `<div class="ai-msg bot">${formatted}</div>`;
+    chat.scrollTop = chat.scrollHeight;
+  }, delay);
+}
