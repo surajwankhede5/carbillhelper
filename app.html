@@ -1089,7 +1089,9 @@ const CAR_DB = {
     "Ciaz": {variants:["Sigma","Delta","Zeta","Alpha"],fuel:"Petrol/CNG/Diesel"},
     "Eeco": {variants:["Standard","AC","7-Seater"],fuel:"Petrol/CNG"},
     "Invicto": {variants:["Zeta+","Alpha+"],fuel:"Hybrid"},
-    "e Vitara": {variants:["Delta","Zeta","Alpha"],fuel:"Electric"}
+    "e Vitara": {variants:["Delta+","Zeta+","Alpha+"],fuel:"Electric"},
+    "Victoris": {variants:["Zeta","Alpha","Alpha+"],fuel:"Petrol/Hybrid"},
+    "Dzire 2024": {variants:["LXi","VXi","ZXi","ZXi+"],fuel:"Petrol/CNG"}
   },
   "Hyundai": {
     "Grand i10 Nios": {variants:["Era","Magna","Sportz","Asta","Asta (O)"],fuel:"Petrol/CNG/Diesel"},
@@ -1104,7 +1106,9 @@ const CAR_DB = {
     "Tucson": {variants:["Platinum","Signature"],fuel:"Petrol/Diesel"},
     "Exter": {variants:["EX","S","S AMT","SX","SX(O)","SX(O) Connect"],fuel:"Petrol/CNG"},
     "Ioniq 5": {variants:["Standard","Long Range"],fuel:"Electric"},
-    "Kona Electric": {variants:["Base","Premium"],fuel:"Electric"}
+    "Kona Electric": {variants:["Base","Premium"],fuel:"Electric"},
+    "Creta N Line": {variants:["N8","N10","N10(O)"],fuel:"Petrol/Diesel"},
+    "Venue N Line": {variants:["N6","N8","N10"],fuel:"Petrol"}
   },
   "Tata Motors": {
     "Tiago": {variants:["XE","XM","XT","XZ","XZ+"],fuel:"Petrol/CNG/Diesel"},
@@ -1117,14 +1121,19 @@ const CAR_DB = {
     "Harrier": {variants:["Smart","Smart+","Pure","Creative","Fearless","Fearless+"],fuel:"Diesel"},
     "Safari": {variants:["Smart","Smart+","Pure","Creative","Fearless","Fearless+"],fuel:"Diesel"},
     "Curvv": {variants:["Creative","Fearless","Fearless+","Accomplished"],fuel:"Petrol/Diesel"},
-    "Curvv EV": {variants:["Creative+","Fearless","Fearless+","Accomplished+"],fuel:"Electric"}
+    "Curvv EV": {variants:["Creative+","Fearless","Fearless+","Accomplished+"],fuel:"Electric"},
+    "Sierra": {variants:["Smart","Smart+","Adventure","Creative","Empowered","Empowered+"],fuel:"Petrol/EV"},
+    "Sierra EV": {variants:["Medium Range","Long Range"],fuel:"Electric"},
+    "Avinya": {variants:["Standard"],fuel:"Electric"}
   },
   "Honda": {
     "Amaze": {variants:["E","S","V","VX"],fuel:"Petrol/Diesel"},
     "City": {variants:["SV","V","VX","ZX"],fuel:"Petrol/Diesel/Hybrid"},
     "City e:HEV": {variants:["V","ZX"],fuel:"Hybrid"},
     "Elevate": {variants:["SV","V","VX","ZX"],fuel:"Petrol"},
-    "WR-V": {variants:["S","V","VX"],fuel:"Petrol/Diesel"}
+    "WR-V": {variants:["S","V","VX"],fuel:"Petrol/Diesel"},
+    "Amaze 2024": {variants:["V","S","VX","ZX"],fuel:"Petrol"},
+    "Elevate 2024": {variants:["SV","V","VX","ZX"],fuel:"Petrol"}
   },
   "Toyota": {
     "Glanza": {variants:["E","S","G","V"],fuel:"Petrol/CNG"},
@@ -1137,7 +1146,9 @@ const CAR_DB = {
     "Vellfire": {variants:["Standard"],fuel:"Hybrid"},
     "Hilux": {variants:["Standard","Adventure"],fuel:"Diesel"},
     "Land Cruiser": {variants:["VX"],fuel:"Diesel"},
-    "Fortuner Legender": {variants:["Standard"],fuel:"Diesel"}
+    "Fortuner Legender": {variants:["Standard"],fuel:"Diesel"},
+    "Urban Cruiser EV": {variants:["G","V","VX","ZX"],fuel:"Electric"},
+    "Taisor": {variants:["E","S","S AMT","G","G AMT","V","V AMT"],fuel:"Petrol/CNG"}
   },
   "Mahindra": {
     "XUV 3XO": {variants:["MX1","MX2","MX2 Pro","MX3","MX3 Pro","AX5","AX5 L","AX7","AX7 L"],fuel:"Petrol/Diesel"},
@@ -1149,7 +1160,11 @@ const CAR_DB = {
     "Bolero": {variants:["B2","B4","B6","B6 (O)"],fuel:"Diesel"},
     "Bolero Neo": {variants:["N4","N8","N10","N10 (O)"],fuel:"Diesel"},
     "XUV.e8": {variants:["Standard","Plus"],fuel:"Electric"},
-    "BE 6": {variants:["P65","P85","Thundercloud"],fuel:"Electric"}
+    "BE 6": {variants:["P65","P85","Thundercloud"],fuel:"Electric"},
+    "Thar Roxx": {variants:["MX1","MX3","AX3L","AX5L","AX7L"],fuel:"Petrol/Diesel"},
+    "XEV 9e": {variants:["Pack One","Pack Two","Pack Three"],fuel:"Electric"},
+    "XUV 7XO": {variants:["AX3","AX5","AX7","AX9"],fuel:"Petrol/Diesel"},
+    "Bolero Neo+": {variants:["N10","N10 (O)"],fuel:"Diesel"}
   },
   "Kia": {
     "Sonet": {variants:["HTE","HTK","HTK+","HTX","HTX+","GTX+"],fuel:"Petrol/Diesel"},
@@ -1157,7 +1172,8 @@ const CAR_DB = {
     "Carens": {variants:["Premium","Prestige","Prestige+","Luxury","Luxury+"],fuel:"Petrol/Diesel"},
     "Carnival": {variants:["Premium","Prestige","Limousine"],fuel:"Diesel"},
     "EV6": {variants:["GT Line","GT Line AWD"],fuel:"Electric"},
-    "EV9": {variants:["GT Line AWD"],fuel:"Electric"}
+    "EV9": {variants:["GT Line AWD"],fuel:"Electric"},
+    "Syros": {variants:["HTE","HTK","HTK+","HTX","HTX+","X Line"],fuel:"Petrol/Diesel"}
   },
   "MG Motor": {
     "Hector": {variants:["Style","Super","Smart","Sharp","Savvy"],fuel:"Petrol/Diesel/Hybrid"},
@@ -1166,18 +1182,26 @@ const CAR_DB = {
     "ZS EV": {variants:["Excite","Exclusive"],fuel:"Electric"},
     "Windsor EV": {variants:["Excite","Exclusive","Essence"],fuel:"Electric"},
     "Comet EV": {variants:["Pace","Play","Plush"],fuel:"Electric"},
-    "Gloster": {variants:["Super","Smart","Sharp"],fuel:"Diesel"}
+    "Gloster": {variants:["Super","Smart","Sharp"],fuel:"Diesel"},
+    "Cyberster": {variants:["Standard"],fuel:"Electric"},
+    "M9": {variants:["Luxury","Luxury Plus"],fuel:"Electric"},
+    "Cloud EV": {variants:["Excite","Exclusive"],fuel:"Electric"}
   },
   "Renault": {
     "Kwid": {variants:["RXE","RXL","RXT","RXT(O)","Climber"],fuel:"Petrol"},
     "Triber": {variants:["RXE","RXL","RXT","RXT(O)"],fuel:"Petrol"},
     "Kiger": {variants:["RXE","RXL","RXT","RXT(O)","RXZ"],fuel:"Petrol"},
-    "Duster": {variants:["RXS","RXZ","RXZ AWD"],fuel:"Petrol/Diesel"}
+    "Duster": {variants:["Journey MT","Journey CVT","Iconic MT","Iconic CVT","Iconic Hybrid","Adventure MT"],fuel:"Petrol/Hybrid"},
+    "Duster 2022": {variants:["RXS","RXZ","RXZ AWD"],fuel:"Petrol/Diesel"},
+    "Triber AMT": {variants:["RXL","RXT","RXT(O)"],fuel:"Petrol"}
   },
   "Nissan": {
     "Magnite": {variants:["XE","XL","XV","XV Premium","XV Premium(O)","Turbo XV"],fuel:"Petrol"},
     "Kicks": {variants:["XL","XV","XV Premium"],fuel:"Petrol/Diesel"},
-    "Terrano": {variants:["XL","XV","XV Premium D"],fuel:"Petrol/Diesel"}
+    "Terrano": {variants:["XL","XV","XV Premium D"],fuel:"Petrol/Diesel"},
+    "X-Trail": {variants:["XE","XL","XV","XV Premium"],fuel:"Petrol"},
+    "Gravite": {variants:["XE","XL","XV"],fuel:"Petrol"},
+    "Kicks 2024": {variants:["XV","XV Premium"],fuel:"Petrol"}
   },
   "Volkswagen": {
     "Taigun": {variants:["Comfortline","Highline","Topline","GT"],fuel:"Petrol"},
@@ -1191,19 +1215,23 @@ const CAR_DB = {
     "Slavia": {variants:["Active","Ambition","Style","Monte Carlo"],fuel:"Petrol"},
     "Kodiaq": {variants:["Style","Sportline","L&K"],fuel:"Petrol"},
     "Superb": {variants:["Style","Sportline","L&K"],fuel:"Petrol"},
-    "Octavia": {variants:["Style","RS"],fuel:"Petrol/Diesel"}
+    "Octavia": {variants:["Style","RS"],fuel:"Petrol/Diesel"},
+    "Kylaq": {variants:["Classic","Classic+","Signature","Signature+","Prestige"],fuel:"Petrol"}
   },
   "Jeep": {
     "Compass": {variants:["Sport","Sport+","Longitude","Limited","Limited Plus","Trailhawk","Model S"],fuel:"Petrol/Diesel"},
     "Meridian": {variants:["Longitude","Limited","Limited Plus","Overland"],fuel:"Diesel"},
     "Wrangler": {variants:["Unlimited"],fuel:"Petrol"},
-    "Grand Cherokee": {variants:["Limited","Overland","Summit"],fuel:"Petrol/Diesel"}
+    "Grand Cherokee": {variants:["Limited","Overland","Summit"],fuel:"Petrol/Diesel"},
+    "Avenger": {variants:["Sport","Longitude","Altitude"],fuel:"Petrol/Diesel/Electric"}
   },
   "Citroen": {
     "C3": {variants:["Live","Feel","Shine"],fuel:"Petrol"},
     "C3 Aircross": {variants:["Feel","Shine","Shine+"],fuel:"Petrol"},
     "C5 Aircross": {variants:["Feel","Shine"],fuel:"Petrol/Diesel"},
-    "eC3": {variants:["Feel","Shine"],fuel:"Electric"}
+    "eC3": {variants:["Feel","Shine"],fuel:"Electric"},
+    "Basalt": {variants:["Feel","Shine","Shine+"],fuel:"Petrol"},
+    "C3 Aircross 2024": {variants:["Feel","Shine","Shine+"],fuel:"Petrol"}
   },
   "BMW": {
     "X1": {variants:["sDrive18i","xDrive20d","xDrive28i"],fuel:"Petrol/Diesel"},
@@ -1236,7 +1264,11 @@ const CAR_DB = {
   "BYD": {
     "Atto 3": {variants:["Standard","Extended Range"],fuel:"Electric"},
     "Seal": {variants:["Dynamic","Premium"],fuel:"Electric"},
-    "e6": {variants:["Standard"],fuel:"Electric"}
+    "e6": {variants:["Standard"],fuel:"Electric"},
+    "Seal": {variants:["Dynamic","Premium"],fuel:"Electric"},
+    "Sealion 6": {variants:["Premium","Performance"],fuel:"Electric"},
+    "Sealion 7": {variants:["Premium","Performance"],fuel:"Electric"},
+    "eMAX 7": {variants:["Standard"],fuel:"Electric"}
   },
   "Tesla": {
     "Model 3": {variants:["Standard Range","Long Range","Performance"],fuel:"Electric"},
@@ -3051,23 +3083,23 @@ function evScheduleGeneric(){ return nexonEVSchedule(); }
 
 // Model lists per brand for dropdowns
 const BRAND_MODEL_MAP = {
-  "Maruti Suzuki":["Swift","WagonR","Baleno","Brezza","Ertiga","Dzire","Alto K10","S-Presso","Celerio","Fronx","Grand Vitara","Jimny","XL6","Ignis","Ciaz","Eeco","Invicto"],
-  "Hyundai":["Creta","i20","Venue","Verna","Exter","Aura","Grand i10 Nios","Alcazar","Tucson","Ioniq 5"],
-  "Tata Motors":["Nexon","Punch","Altroz","Tiago","Tigor","Harrier","Safari","Curvv","Nexon EV","Punch EV","Curvv EV"],
-  "Honda":["City","Amaze","Elevate","WR-V","Jazz","CR-V"],
-  "Kia":["Seltos","Sonet","Carens","Carnival","EV6","EV9"],
-  "Toyota":["Innova HyCross","Urban Cruiser Hyryder","Innova Crysta","Fortuner","Glanza","Camry","Vellfire","Hilux","Land Cruiser"],
-  "Mahindra":["XUV700","XUV 3XO","Scorpio N","Scorpio Classic","Thar","Bolero","Bolero Neo","BE 6","XUV400"],
+  "Maruti Suzuki":["Swift","WagonR","Baleno","Brezza","Ertiga","Dzire","Dzire 2024","Alto K10","S-Presso","Celerio","Fronx","Grand Vitara","Jimny","XL6","Ignis","Ciaz","Eeco","Invicto","e Vitara","Victoris","Taisor"],
+  "Hyundai":["Creta","Creta N Line","i20","Venue","Venue N Line","Verna","Exter","Aura","Grand i10 Nios","Alcazar","Tucson","Ioniq 5","Kona Electric"],
+  "Tata Motors":["Nexon","Punch","Altroz","Tiago","Tigor","Harrier","Safari","Curvv","Nexon EV","Punch EV","Curvv EV","Sierra","Sierra EV","Avinya"],
+  "Honda":["City","Amaze","Amaze 2024","Elevate","Elevate 2024","WR-V","Jazz","CR-V"],
+  "Kia":["Seltos","Sonet","Carens","Carnival","EV6","EV9","Syros"],
+  "Toyota":["Innova HyCross","Urban Cruiser Hyryder","Urban Cruiser EV","Taisor","Innova Crysta","Fortuner","Fortuner Legender","Glanza","Camry","Vellfire","Hilux","Land Cruiser"],
+  "Mahindra":["XUV700","XUV 3XO","XUV 7XO","Scorpio N","Scorpio Classic","Thar","Thar Roxx","Bolero","Bolero Neo","Bolero Neo+","BE 6","XEV 9e","XUV400"],
   "Volkswagen":["Taigun","Virtus","Tiguan","Polo","Vento"],
-  "Skoda":["Kushaq","Slavia","Kodiaq","Superb","Octavia"],
-  "MG Motor":["Hector","Hector Plus","Astor","ZS EV","Windsor EV","Comet EV","Gloster"],
-  "Renault":["Kwid","Triber","Kiger","Duster"],
-  "Nissan":["Magnite","Kicks","Terrano"],
-  "Jeep":["Compass","Meridian","Wrangler","Grand Cherokee"],
+  "Skoda":["Kylaq","Kushaq","Slavia","Kodiaq","Superb","Octavia"],
+  "MG Motor":["Hector","Hector Plus","Astor","ZS EV","Windsor EV","Comet EV","Gloster","Cyberster","M9","Cloud EV"],
+  "Renault":["Kwid","Triber","Kiger","Duster","Triber AMT"],
+  "Nissan":["Magnite","Kicks","Kicks 2024","Terrano","X-Trail","Gravite"],
+  "Jeep":["Compass","Meridian","Wrangler","Grand Cherokee","Avenger"],
   "BMW":["X1","X3","X5","3 Series","5 Series","iX","i4"],
   "Mercedes-Benz":["A-Class","C-Class","E-Class","GLC","GLE","EQS","EQB"],
   "Audi":["Q3","Q5","Q7","A4","A6","e-tron"],
-  "BYD":["Atto 3","Seal","e6"]
+  "BYD":["Atto 3","Seal","Sealion 6","Sealion 7","eMAX 7","e6"]
 };
 
 function updateSchModels(){
@@ -3438,7 +3470,6 @@ function showPartsDatabase(){
 }
 
 // Update switchToolTab to include partslookup
-const _origSwitch = switchToolTab;
 function switchToolTab(tab){
   ['schedule','billcheck','getadvisory','advisory','partslookup'].forEach(t=>{
     const panel=document.getElementById('tool-'+t);
@@ -4114,671 +4145,12 @@ const PARTS_DB = {
 };
 
 
-const DEEP_CAR_PROFILES = {
 
-  // ── MARUTI SUZUKI ──────────────────────────────────────────────
-  "Maruti Suzuki": {
-    "Swift": {
-      engine: "1.2L K-Series DualJet Petrol | 1.2L CNG",
-      service_schedule: [
-        { km: 10000, tasks: ["Engine oil + filter (5W-30 full synthetic)", "Tyre pressure & rotation", "Air filter inspect", "Brake check", "All fluid levels"], cost: "₹2,000–3,500" },
-        { km: 20000, tasks: ["Air filter replace", "Spark plug inspect", "Fuel filter check", "AC filter clean", "Battery check", "Clutch check"], cost: "₹3,000–4,500" },
-        { km: 40000, tasks: ["Spark plugs replace", "Brake pads measure/replace", "Coolant top-up", "Transmission fluid check", "Wheel alignment"], cost: "₹5,000–9,000" },
-        { km: 60000, tasks: ["Transmission fluid change", "Brake fluid change", "Timing chain inspect", "Full suspension check", "Throttle body clean if needed"], cost: "₹7,000–12,000" },
-        { km: 80000, tasks: ["Complete major service", "Timing chain + tensioner inspect", "All bushes inspect", "Full brake overhaul", "AC service"], cost: "₹10,000–18,000" }
-      ],
-      known_issues: [
-        "Gear shift stiffness (K12C engine — common, warms up with use)",
-        "AC belt squeal (replace belt ₹400–600)",
-        "Paint chipping on front edges",
-        "High-pitched engine hum at idle (normal for DualJet)",
-        "CNG variant: Occasional stalling when switching fuels"
-      ],
-      insurance_coverage: {
-        "Engine Oil & Filter": "NOT covered (consumable) — Pay from pocket",
-        "Brake Pads": "Covered under Zero Dep (wear and tear NOT covered in standard)",
-        "Spark Plugs": "NOT covered (consumable)",
-        "Windscreen": "Covered — zero dep recommended to avoid 50% depreciation",
-        "Bumper": "Covered — Zero Dep saves you ₹3,000–5,000",
-        "Engine flood damage": "ONLY if Engine Protection add-on taken",
-        "Accident body damage": "Covered under comprehensive",
-        "Tyre blowout": "NOT covered unless separate tyre protection taken",
-        "Battery": "NOT covered (wear item)"
-      },
-      money_saving_tips: [
-        "Use Maruti authorized service for warranty period — avoids warranty void",
-        "After warranty: Use good local garage, save 30–40%",
-        "Buy engine oil yourself (Castrol GTX 5W-30) + pay only labour ₹200–300",
-        "Avoid Engine Flush, Teflon coating, Injector cleaning — all unnecessary",
-        "Get Zero Depreciation cover — saves ₹3,000–8,000 per claim",
-        "Buy insurance ONLINE (policybazaar) — save ₹2,000–3,500/year",
-        "Correct tyre pressure saves ₹500–700/month in fuel"
-      ],
-      annual_running_cost: "₹35,000–55,000/year (insurance + service + fuel for 15,000 km)"
-    },
+// ════════════════════════════════════════════════════════
+// PRICE DATABASE — All Current Indian Cars 2025-26
+// Prices: Ex-showroom (approx, may vary)
+// ════════════════════════════════════════════════════════
 
-    "WagonR": {
-      engine: "1.0L K10C Petrol | 1.2L K12N Petrol | 1.0L CNG",
-      service_schedule: [
-        { km: 10000, tasks: ["Engine oil + filter (5W-30)", "Tyre rotation", "Brake fluid level", "Coolant check", "Air filter inspect"], cost: "₹1,800–3,000" },
-        { km: 20000, tasks: ["Air filter replace", "Spark plug check", "Wiper blades check", "Battery check"], cost: "₹2,500–4,000" },
-        { km: 40000, tasks: ["Spark plugs replace", "Brake pads check", "AC filter replace", "Transmission fluid inspect", "Wheel alignment + balancing"], cost: "₹4,500–7,500" },
-        { km: 60000, tasks: ["Transmission fluid change", "Brake fluid flush", "Engine mount check", "All belts inspect"], cost: "₹6,000–10,000" },
-        { km: 80000, tasks: ["Full major service", "Timing chain inspect", "Clutch inspect (manual)", "Complete underbody check"], cost: "₹9,000–15,000" }
-      ],
-      known_issues: [
-        "AC compressor noise (check compressor oil level)",
-        "Vibration at idle with AC on (AC compressor mount wear — ₹2,000–3,000)",
-        "CNG variant: check high-pressure pipes yearly",
-        "AMT variant: low-speed jerk is normal behavior"
-      ],
-      insurance_coverage: {
-        "CNG Kit damage": "Covered ONLY if CNG endorsed in RC and insurance",
-        "Engine Oil": "NOT covered",
-        "Body panels": "Covered (Zero Dep = full payment)",
-        "Headlights/taillights": "Covered — Zero Dep avoids 30% depreciation",
-        "Flood engine damage": "Only with Engine Protection add-on"
-      },
-      money_saving_tips: [
-        "WagonR CNG: ₹90–100/day running cost vs ₹200+ for petrol — best for high usage",
-        "CNG saves ₹4,000–5,000/month for 2,000 km/month",
-        "Avoid premium fuel — WagonR runs perfectly on regular petrol",
-        "Self-buy oil: Castrol GTX 5W-30 ₹350/L × 2.5L = ₹875 vs dealer ₹1,800",
-        "Get NCB — after 5 years save 50% on insurance premium"
-      ],
-      annual_running_cost: "₹30,000–50,000/year petrol | ₹20,000–35,000/year CNG"
-    },
-
-    "Baleno": {
-      engine: "1.2L DualJet Petrol | 1.2L CNG",
-      service_schedule: [
-        { km: 10000, tasks: ["Oil + filter (5W-30 synthetic)", "Tyre pressure", "Brake inspect", "Cabin filter check"], cost: "₹2,200–3,800" },
-        { km: 20000, tasks: ["Air filter replace", "Cabin filter replace", "Spark plugs check", "Battery check", "Wiper blades"], cost: "₹3,000–5,000" },
-        { km: 40000, tasks: ["Spark plugs replace", "Fuel system check", "Brake fluid check", "Coolant level", "Wheel alignment"], cost: "₹5,000–8,000" },
-        { km: 80000, tasks: ["Timing chain inspect", "Full brake service", "All bushes", "Complete underbody"], cost: "₹10,000–18,000" }
-      ],
-      known_issues: [
-        "CVT (some variants): Shudder at low speed — check CVT fluid",
-        "Infotainment screen lag — software update usually fixes",
-        "Paint quality on lower variants — touch-up common"
-      ],
-      insurance_coverage: {
-        "Infotainment damage in accident": "Covered under comprehensive",
-        "Sunroof glass": "Covered — Zero Dep prevents 30% deduction",
-        "Alloy wheels scratch": "NOT covered in standard — need alloy wheel cover add-on",
-        "Engine oil + consumables": "NOT covered"
-      },
-      money_saving_tips: [
-        "Baleno CNG variant: Excellent for city — best mileage in segment",
-        "Use Maruti's 360 warranty extension if buying second-hand",
-        "After 3 years switch to local garage — save 40% vs Maruti service center"
-      ],
-      annual_running_cost: "₹40,000–60,000/year"
-    },
-
-    "Brezza": {
-      engine: "1.5L K15C Petrol | 1.5L K15C CNG | (Old: 1.3L Diesel)",
-      service_schedule: [
-        { km: 10000, tasks: ["Oil + filter (5W-30)", "Tyre rotation", "All fluids", "Brake check"], cost: "₹2,500–4,000" },
-        { km: 20000, tasks: ["Air filter replace", "Spark plugs inspect", "AC filter", "Battery check"], cost: "₹3,500–5,500" },
-        { km: 40000, tasks: ["Spark plugs replace", "Brake pads measure", "Fuel system check", "Alignment"], cost: "₹5,500–9,000" },
-        { km: 60000, tasks: ["Transmission fluid change", "Brake fluid flush", "Full suspension check"], cost: "₹7,000–12,000" }
-      ],
-      known_issues: [
-        "1.5L Turbo: Occasional lag at low RPM (normal turbo behavior)",
-        "Paddle shift AMT: Slight jerk in stop-go traffic",
-        "Sunroof: Check drainage channels every monsoon"
-      ],
-      insurance_coverage: {
-        "Sunroof damage": "Covered — Zero Dep highly recommended",
-        "Alloy wheel curb damage": "NOT covered standard — add alloy protection",
-        "TPMS sensor damage": "Covered in accident claim"
-      },
-      money_saving_tips: [
-        "Brezza CNG saves ₹4,500–5,500/month vs petrol at 2,000 km",
-        "Use Brezza SUV ground clearance — avoid underbody scraping damage",
-        "Zero Dep for sunroof glass alone worth the premium",
-        "Tyre rotation every 10,000 km extends tyre life by 30%"
-      ],
-      annual_running_cost: "₹45,000–70,000/year"
-    },
-
-    "Ertiga": {
-      engine: "1.5L K15B Petrol | 1.5L CNG",
-      service_schedule: [
-        { km: 10000, tasks: ["Oil + filter (5W-30 semi-synthetic)", "All fluid levels", "7-seat check: 3rd row latches", "Tyre pressure all 4"], cost: "₹2,500–4,000" },
-        { km: 20000, tasks: ["Air filter replace", "CNG filter replace (if CNG)", "Spark plugs check", "Sliding door lubrication"], cost: "₹3,500–5,500" },
-        { km: 40000, tasks: ["Spark plugs replace", "Brake pads full check (6 pads)", "Coolant", "Wheel alignment (critical for 7-seater)"], cost: "₹6,000–10,000" },
-        { km: 60000, tasks: ["Transmission fluid", "Brake fluid flush", "All bushes inspect", "Timing chain check"], cost: "₹8,000–13,000" }
-      ],
-      known_issues: [
-        "Middle seat harness sometimes uncomfortable on long trips",
-        "AC may struggle in peak summer with full 7 passengers (front + rear AC advised)",
-        "CNG: Range reduces to ~200 km per fill — plan for longer trips",
-        "3rd row entry/exit tight for adults"
-      ],
-      insurance_coverage: {
-        "Sliding door mechanism": "Covered in accident claim",
-        "All 3 rows seating damage": "Covered",
-        "CNG cylinder": "Covered if RC-endorsed",
-        "Passenger Personal Accident": "Separate PA cover recommended for 7-seater taxi use"
-      },
-      money_saving_tips: [
-        "Ertiga CNG for taxi/family use: Saves ₹8,000–12,000/month vs petrol",
-        "Best 7-seater value in India — maintenance costs low",
-        "Avoid dealer accessories (seat covers, mats) — buy from market at 50% less",
-        "Commercial use (taxi): Get commercial vehicle insurance — personal insurance VOID for taxi use!"
-      ],
-      annual_running_cost: "₹45,000–65,000/year petrol | ₹28,000–45,000/year CNG"
-    },
-
-    "Grand Vitara": {
-      engine: "1.5L K15C Mild Hybrid Petrol | 1.5L Strong Hybrid",
-      service_schedule: [
-        { km: 10000, tasks: ["Oil + filter (0W-16 or 5W-30 per variant)", "Hybrid battery cooling check", "Brake fluid level", "EV mode check"], cost: "₹3,000–5,000" },
-        { km: 20000, tasks: ["Air filter replace", "Spark plugs check (iridium)", "Hybrid system scan", "Tyre rotation"], cost: "₹4,000–6,500" },
-        { km: 40000, tasks: ["Spark plugs replace", "Brake pads (less wear due to regen braking)", "Hybrid battery health check", "Coolant"], cost: "₹6,000–10,000" },
-        { km: 80000, tasks: ["Full major service", "Hybrid inverter coolant change", "All seals and gaskets check"], cost: "₹12,000–22,000" }
-      ],
-      known_issues: [
-        "Strong Hybrid: AC takes 2–3 min to cool cabin when starting cold (engine off = no instant AC)",
-        "Some software glitches in infotainment — OTA updates help",
-        "Strong Hybrid: Cannot tow (battery management limitation)"
-      ],
-      insurance_coverage: {
-        "Hybrid battery damage (accident)": "Covered under comprehensive",
-        "Hybrid battery degradation": "NOT covered — wear item (but warranty 8yr/1.6L km)",
-        "Electric motor damage in accident": "Covered",
-        "High-voltage system": "Only authorized center can work on it"
-      },
-      money_saving_tips: [
-        "Strong Hybrid: 27–30 kmpl real-world — saves ₹5,000–7,000/month vs regular SUV",
-        "Hybrid battery warranty: 8 years/1.6 lakh km — peace of mind",
-        "Use regenerative braking in city — extends brake pad life significantly",
-        "Avoid city AC pre-cooling before start — Strong Hybrid needs engine running for AC"
-      ],
-      annual_running_cost: "₹35,000–55,000/year (best in class fuel economy for SUV)"
-    }
-  },
-
-  // ── HYUNDAI ───────────────────────────────────────────────────
-  "Hyundai": {
-    "Creta": {
-      engine: "1.5L MPi Petrol | 1.5L Turbo Petrol | 1.5L CRDi Diesel",
-      service_schedule: [
-        { km: 10000, tasks: ["Oil + filter (5W-30 petrol / 15W-40 diesel)", "All fluid levels", "Brake inspection", "Air filter check", "Tyre rotation"], cost: "₹3,500–5,500" },
-        { km: 20000, tasks: ["Air filter replace", "Diesel: Fuel filter CRITICAL replace", "AC cabin filter", "Spark plugs inspect (petrol)", "Clutch check (manual)"], cost: "₹4,500–7,000" },
-        { km: 40000, tasks: ["Spark plugs replace (petrol)", "Brake pads measure", "Transmission oil check", "Coolant top-up", "Full alignment + balancing"], cost: "₹7,000–12,000" },
-        { km: 60000, tasks: ["Transmission fluid change", "Brake fluid flush", "Timing chain/belt inspect", "Full suspension audit"], cost: "₹9,000–15,000" },
-        { km: 80000, tasks: ["Full major overhaul", "Timing chain/belt replacement if needed", "All gaskets check", "Fuel injector clean (diesel)"], cost: "₹15,000–25,000" }
-      ],
-      known_issues: [
-        "1.5 Turbo DCT: Low-speed jerk — normal for DCT, improves with gentle throttle",
-        "Panoramic sunroof: Check rubber seals yearly for leakage",
-        "Diesel at cold start: Some NVH (normal for diesel)",
-        "Ventilated seat fan noise (some batches)",
-        "ADAS/BlueLink: Occasional software freeze — restart via settings"
-      ],
-      insurance_coverage: {
-        "Sunroof glass/mechanism": "Covered — Zero Dep prevents ₹5,000–8,000 deduction",
-        "ADAS camera (accident)": "Covered under comprehensive — recalibration ₹5,000–10,000 also claimable",
-        "Alloy wheels (curb damage)": "NOT covered — add alloy wheel protection ₹1,500/year",
-        "DCT gearbox failure (manufacturing)": "Covered under manufacturer warranty",
-        "Diesel injector damage (fuel quality)": "NOT covered — maintain with quality diesel",
-        "Engine Protection (flood)": "Only with add-on — HIGHLY recommended for Creta diesel",
-        "Accessories (dash cam, mats)": "NOT covered — add accessories cover"
-      },
-      money_saving_tips: [
-        "Creta diesel: Best for 2,000+ km/month — saves ₹5,000–7,000/month vs petrol",
-        "Petrol for city < 1,500 km/month — diesel gets expensive in service",
-        "Use Hyundai Blue Link app — track service reminders, don't overpay at dealer",
-        "Buy Creta insurance ONLINE — save ₹3,000–5,000 vs Hyundai showroom",
-        "Zero Dep + Engine Protection combo: Best for Creta — saves max money in claims",
-        "After 3 year warranty: Use Hyundai extended warranty OR quality local garage",
-        "Check NCB carefully before switching insurers — take NCB certificate"
-      ],
-      annual_running_cost: "₹55,000–85,000/year petrol | ₹45,000–70,000/year diesel"
-    },
-
-    "i20": {
-      engine: "1.2L Kappa Petrol | 1.5L CRDi Diesel | 1.0L Turbo GDi",
-      service_schedule: [
-        { km: 10000, tasks: ["Oil + filter (5W-30)", "Tyre rotation", "Brake fluid check", "Air filter inspect"], cost: "₹2,800–4,500" },
-        { km: 20000, tasks: ["Air filter replace", "Spark plugs check", "AC filter replace", "Battery load test"], cost: "₹3,500–5,500" },
-        { km: 40000, tasks: ["Spark plugs replace", "Brake pads", "Fuel filter (diesel)", "Transmission check", "Wheel alignment"], cost: "₹6,000–10,000" },
-        { km: 60000, tasks: ["Full brake overhaul", "Transmission fluid", "Coolant flush", "Timing chain check"], cost: "₹8,000–14,000" }
-      ],
-      known_issues: [
-        "1.0 Turbo: Require full synthetic oil (0W-20) — don't use mineral oil!",
-        "IVT (belt-CVT): Do NOT tow — CVT can overheat",
-        "N-Line: Performance tyres wear faster — ₹5,000 each replacement",
-        "Clutch engagement height on manual: Some find it too high"
-      ],
-      insurance_coverage: {
-        "Turbo damage (accident)": "Covered",
-        "N-Line alloys": "Need alloy protection add-on",
-        "Sunroof (top variants)": "Zero Dep recommended"
-      },
-      money_saving_tips: [
-        "1.0 Turbo: Must use full synthetic oil only — but longer change interval (10,000 km)",
-        "IVT variant: Better fuel economy in city than manual for i20",
-        "i20 diesel: Best mileage — 22–26 kmpl highway",
-        "Avoid dealer-fitted accessories — overpriced by 200–300%"
-      ],
-      annual_running_cost: "₹40,000–60,000/year"
-    },
-
-    "Venue": {
-      engine: "1.2L Petrol | 1.0L Turbo GDi Petrol | 1.5L Diesel",
-      service_schedule: [
-        { km: 10000, tasks: ["Oil + filter", "All fluids", "Tyre rotation", "Brake check"], cost: "₹2,500–4,000" },
-        { km: 20000, tasks: ["Air filter", "AC filter", "Spark plugs inspect", "Battery check"], cost: "₹3,000–5,000" },
-        { km: 40000, tasks: ["Spark plugs replace", "Diesel: Fuel filter", "Brake pads", "Alignment"], cost: "₹5,500–9,000" }
-      ],
-      known_issues: [
-        "IMT (Intelligent Manual Transmission): Learning curve needed for smooth operation",
-        "DCT 7-speed: Occasional jerk at low speeds",
-        "BlueLink connectivity: Sometimes drops — software issue"
-      ],
-      money_saving_tips: [
-        "Venue 1.0 Turbo: Excellent balance — city + highway mileage",
-        "IMT gearbox: Gets better with practice, save ₹30,000+ vs automatic price",
-        "Venue compact size: Lower insurance premium than Creta!"
-      ],
-      annual_running_cost: "₹40,000–60,000/year"
-    },
-
-    "Exter": {
-      engine: "1.2L Kappa Petrol | 1.2L CNG",
-      service_schedule: [
-        { km: 10000, tasks: ["Oil + filter (5W-30)", "CNG filter check", "Tyre rotation", "Brake inspect"], cost: "₹2,000–3,500" },
-        { km: 20000, tasks: ["Air filter replace", "CNG high-pressure pipe check", "Spark plugs (iridium for CNG)", "Battery check"], cost: "₹3,000–5,000" },
-        { km: 40000, tasks: ["Spark plugs replace", "Brake pads", "All bushes", "Alignment"], cost: "₹5,000–8,000" }
-      ],
-      known_issues: ["CNG: Ensure iridium spark plugs — regular plugs wear fast", "Small fuel tank — plan CNG fills on highway"],
-      money_saving_tips: [
-        "Exter CNG: ₹95–110/day for 40 km — best in class economy",
-        "Micro SUV size: Lowest insurance premium in segment"
-      ],
-      annual_running_cost: "₹30,000–45,000/year CNG"
-    }
-  },
-
-  // ── TATA MOTORS ───────────────────────────────────────────────
-  "Tata Motors": {
-    "Nexon": {
-      engine: "1.2L Turbotec Petrol | 1.5L Kryotec Diesel",
-      service_schedule: [
-        { km: 10000, tasks: ["Oil + filter (5W-40 turbo petrol / 15W-40 diesel)", "Tyre rotation", "Brake fluid check", "Air filter inspect", "Turbo inlet inspect"], cost: "₹3,000–5,000" },
-        { km: 20000, tasks: ["Air filter replace", "Diesel: Fuel filter CRITICAL", "Cabin AC filter", "Spark plugs inspect (petrol)"], cost: "₹4,000–6,500" },
-        { km: 40000, tasks: ["Spark plugs replace", "Brake pads measure", "Coolant", "Full alignment + balancing", "Diesel injector check"], cost: "₹6,500–11,000" },
-        { km: 60000, tasks: ["Transmission fluid", "Brake fluid flush", "Turbocharger check", "All bushes"], cost: "₹9,000–16,000" },
-        { km: 80000, tasks: ["Full overhaul", "Timing belt/chain check", "Fuel injector service (diesel)", "Complete underbody"], cost: "₹14,000–24,000" }
-      ],
-      known_issues: [
-        "Turbo hiss/whistle: Normal for Nexon turbo — not a defect",
-        "Diesel cold start: Slight rattle for 30 seconds — normal",
-        "Sunroof drainage: Clean drainage holes every monsoon",
-        "Some cabin rattle on rough roads (improved in 2023+ models)",
-        "Ground clearance 209mm: Can handle rough roads well"
-      ],
-      insurance_coverage: {
-        "Turbocharger damage (accident)": "Covered under comprehensive",
-        "Turbocharger wear": "NOT covered (maintenance)",
-        "Diesel injector failure (fuel quality)": "NOT covered",
-        "Sunroof glass": "Covered — Zero Dep saves ₹6,000–10,000",
-        "Front bumper (5-star rated)": "Omega Arc body — resists damage better",
-        "Engine flood damage": "Engine Protection add-on MANDATORY — especially diesel",
-        "Tata warranty claim": "First take to Tata ASC — warranty covers manufacturing defects"
-      },
-      money_saving_tips: [
-        "Nexon Diesel: 24–28 kmpl highway — best in class for mileage",
-        "Use full synthetic oil for turbo petrol — longer engine life",
-        "5-star NCAP safety: Lower accident repair costs due to strong body",
-        "Buy Tata extended warranty — reasonable pricing ₹15,000–20,000 for 2 extra years",
-        "Zero Dep + Engine Protection = must combo for Nexon",
-        "After warranty: Quality local garage saves 35–40% vs Tata service center",
-        "Nexon petrol: ₹18–22 kmpl city — comparable to non-turbo competitors"
-      ],
-      annual_running_cost: "₹55,000–80,000/year petrol | ₹45,000–68,000/year diesel"
-    },
-
-    "Punch": {
-      engine: "1.2L Revotron Petrol | 1.2L CNG",
-      service_schedule: [
-        { km: 10000, tasks: ["Oil + filter (5W-30)", "Tyre check", "All fluids", "Brake inspect"], cost: "₹2,000–3,500" },
-        { km: 20000, tasks: ["Air filter replace", "CNG kit check", "Spark plugs check", "Battery check"], cost: "₹2,800–4,500" },
-        { km: 40000, tasks: ["Spark plugs replace", "Brake pads", "Fuel filter (CNG)", "Alignment"], cost: "₹5,000–8,000" }
-      ],
-      known_issues: [
-        "Small 37L fuel tank — frequent fuel stops on highway",
-        "AMT variant: Hesitation in heavy traffic — normal",
-        "CNG range approx 210–240 km — plan long trips accordingly"
-      ],
-      money_saving_tips: [
-        "Punch EV: Zero fuel cost — ₹1.5–2/km electricity only",
-        "Punch 5-star safety: Lowest repair cost after minor accidents",
-        "Compact size: Lowest insurance premium in Tata range"
-      ],
-      annual_running_cost: "₹32,000–50,000/year petrol | ₹18,000–30,000/year CNG"
-    },
-
-    "Nexon EV": {
-      engine: "Permanent Magnet Synchronous Motor | 30.2 kWh / 40.5 kWh battery",
-      service_schedule: [
-        { km: 10000, tasks: ["Tyre rotation + pressure", "Brake fluid check (minimal wear due to regen)", "Battery thermal system check", "Cabin AC filter", "Software update check"], cost: "₹2,500–4,000" },
-        { km: 20000, tasks: ["Brake pads measure (minimal wear)", "12V auxiliary battery check", "High voltage cable visual inspect", "All firmware update"], cost: "₹3,000–5,000" },
-        { km: 40000, tasks: ["Full brake service", "Coolant (battery cooling loop)", "All seals check", "Battery health report"], cost: "₹5,000–8,000" }
-      ],
-      known_issues: [
-        "Real-world range 180–230 km (Medium Range) — less than claimed",
-        "Fast charging heats battery — avoid consecutive DC fast charges",
-        "Suspension firm on bad roads — stock tyres 16-inch",
-        "AC reduces range by 15–25% in summer"
-      ],
-      insurance_coverage: {
-        "Battery damage in accident": "Covered under comprehensive — check policy explicitly",
-        "Battery degradation": "NOT covered — Tata warranty covers 8yr/1.6L km, 70% capacity guarantee",
-        "Charging cable theft": "Add-on needed",
-        "Motor damage in accident": "Covered",
-        "Home charger damage": "NOT covered under vehicle policy — separate home insurance"
-      },
-      money_saving_tips: [
-        "Home charging: ₹1.5–2/km vs petrol ₹5–7/km — saves ₹6,000–8,000/month at 2,000 km",
-        "Charge to 80% daily — charge to 100% only for long trips",
-        "Use regen braking mode D (high) in city — extends brake pads 3–4x longer",
-        "Government FAME II subsidy check if still available in your state",
-        "EV insurance is slightly higher — but overall TCO is 40% less than petrol equivalent",
-        "Battery 8-year warranty: Don't worry about battery replacement"
-      ],
-      annual_running_cost: "₹18,000–28,000/year (electricity only — saves ₹40,000–60,000 vs petrol)"
-    },
-
-    "Harrier": {
-      engine: "2.0L Kryotec Diesel",
-      service_schedule: [
-        { km: 10000, tasks: ["Oil + filter (15W-40 diesel)", "DPF check", "Fuel filter inspect", "All fluids", "Tyre rotation"], cost: "₹4,500–7,000" },
-        { km: 20000, tasks: ["Fuel filter replace (CRITICAL)", "Air filter replace", "Cabin filter", "Diesel injector check"], cost: "₹6,000–9,000" },
-        { km: 40000, tasks: ["Brake pads full set", "Transmission fluid", "Coolant", "Full alignment (heavy SUV needs precision)"], cost: "₹10,000–16,000" },
-        { km: 80000, tasks: ["Full overhaul", "Injector service", "Timing chain + tensioner", "All gaskets", "Complete brake overhaul"], cost: "₹20,000–35,000" }
-      ],
-      known_issues: [
-        "2.0L diesel NVH at idle — normal for this engine",
-        "DPF: Need highway run every 2,000 km to clear DPF passively",
-        "Large size — tight parking in city",
-        "Terrain modes helpful but require learning"
-      ],
-      insurance_coverage: {
-        "DPF damage (accident)": "Covered",
-        "DPF clogging (maintenance)": "NOT covered",
-        "Large body panels": "Zero Dep strongly recommended — bonnet alone ₹18,000–25,000",
-        "Engine Protection": "MANDATORY for ₹20L+ car diesel"
-      },
-      money_saving_tips: [
-        "Harrier diesel: 18–22 kmpl — good for family SUV",
-        "Highway driving every 2–3 weeks keeps DPF clean — saves ₹5,000–10,000 DPF cleaning",
-        "Zero Dep on Harrier: Saves ₹15,000–30,000 per major claim",
-        "Use quality diesel only — injector damage ₹30,000–80,000 is not covered by insurance"
-      ],
-      annual_running_cost: "₹65,000–1,00,000/year"
-    }
-  },
-
-  // ── HONDA ─────────────────────────────────────────────────────
-  "Honda": {
-    "City": {
-      engine: "1.5L i-VTEC Petrol | 1.5L i-DTEC Diesel | 1.5L Strong Hybrid",
-      service_schedule: [
-        { km: 5000, tasks: ["First free service — oil + filter + inspection"], cost: "Free at Honda" },
-        { km: 10000, tasks: ["Oil + filter (0W-20 hybrid / 5W-30 petrol / 5W-30 diesel)", "All fluids", "Tyre rotation", "Brake inspect"], cost: "₹3,500–5,500" },
-        { km: 20000, tasks: ["Air filter replace", "Diesel: Fuel filter", "Spark plugs check", "AC filter"], cost: "₹4,500–7,000" },
-        { km: 40000, tasks: ["Spark plugs replace (iridium for hybrid)", "Brake pads", "Transmission fluid (CVT: ₹3,500–5,000)", "Alignment"], cost: "₹8,000–14,000" },
-        { km: 60000, tasks: ["Full brake service", "Timing chain inspect", "Coolant flush", "All belts"], cost: "₹10,000–18,000" }
-      ],
-      known_issues: [
-        "CVT: Don't tow — CVT overheats under load",
-        "Diesel: EGR valve carbon buildup at 80,000+ km",
-        "Strong Hybrid: 0W-20 oil MANDATORY — do not use 5W-30",
-        "CVT shudder: CVT fluid change usually fixes it"
-      ],
-      insurance_coverage: {
-        "Honda Sensing ADAS (accident damage)": "Covered — but recalibration ₹5,000–12,000 also claimable",
-        "Hybrid battery (accident)": "Covered",
-        "CVT damage (wear)": "NOT covered — warranty covers defects only",
-        "Diesel EGR cleaning": "NOT covered (maintenance)"
-      },
-      money_saving_tips: [
-        "City Strong Hybrid: 25–30 kmpl real world — saves ₹5,000–7,000/month vs petrol",
-        "Hybrid 8yr/1.6L km battery warranty — don't worry about battery",
-        "Honda is reliable — parts availability excellent",
-        "CVT: Change fluid at 40,000 km — ₹3,500 saves ₹30,000+ gearbox repair",
-        "Honda dealers honest but expensive — authorized garage OK after warranty"
-      ],
-      annual_running_cost: "₹50,000–75,000/year petrol | ₹32,000–48,000/year hybrid"
-    },
-
-    "Amaze": {
-      engine: "1.2L i-VTEC Petrol | 1.5L i-DTEC Diesel",
-      service_schedule: [
-        { km: 10000, tasks: ["Oil + filter (5W-30)", "Tyre rotation", "All fluids"], cost: "₹2,500–4,000" },
-        { km: 20000, tasks: ["Air filter", "Diesel: Fuel filter", "Spark plugs check"], cost: "₹3,500–5,500" },
-        { km: 40000, tasks: ["Spark plugs", "Brake pads", "Timing chain inspect", "Alignment"], cost: "₹6,000–10,000" }
-      ],
-      known_issues: ["Diesel: Excellent but loud at idle — normal", "CVT: Avoid aggressive driving — it's comfort-tuned"],
-      money_saving_tips: [
-        "Amaze diesel: Best diesel mileage in segment (22–27 kmpl)",
-        "Compact size: Lower insurance than Honda City",
-        "Honda reliability: Lower breakdown costs overall"
-      ],
-      annual_running_cost: "₹35,000–55,000/year"
-    }
-  },
-
-  // ── KIA ────────────────────────────────────────────────────────
-  "Kia": {
-    "Seltos": {
-      engine: "1.5L MPi Petrol | 1.5L Turbo GDi Petrol | 1.5L CRDi Diesel",
-      service_schedule: [
-        { km: 10000, tasks: ["Oil + filter (5W-30 petrol / 15W-40 diesel)", "All fluids", "Tyre rotation", "Brake inspect"], cost: "₹3,500–5,500" },
-        { km: 20000, tasks: ["Air filter replace", "Diesel: Fuel filter CRITICAL", "Spark plugs check (petrol)", "Cabin filter replace"], cost: "₹4,500–7,000" },
-        { km: 40000, tasks: ["Spark plugs replace", "Brake pads measure", "DCT fluid check (if DCT)", "Coolant", "Alignment"], cost: "₹7,000–12,000" },
-        { km: 60000, tasks: ["Transmission fluid (DCT ₹4,000–6,000)", "Brake fluid flush", "Full suspension check", "Turbo inspect"], cost: "₹10,000–18,000" }
-      ],
-      known_issues: [
-        "DCT 7-speed: Low-speed creep jerk — normal, improves with time",
-        "Turbo GDi: MUST use full synthetic 5W-30 or 5W-40",
-        "Panoramic sunroof: Check seals every monsoon",
-        "Some ADAS calibration issues — dealer OTA update needed"
-      ],
-      insurance_coverage: {
-        "Sunroof damage": "Covered — Zero Dep prevents ₹8,000–15,000 deduction",
-        "ADAS recalibration cost (post-accident)": "Claimable — mention to surveyor",
-        "DCT gearbox failure (manufacturing)": "Covered under Kia warranty",
-        "Alloy wheel curb scratch": "Need alloy wheel add-on"
-      },
-      money_saving_tips: [
-        "Seltos diesel: 22–26 kmpl highway — saves ₹5,500–7,000/month at 2,000 km",
-        "Use Kia ConnectED app — track service due dates, avoid unnecessary dealer visits",
-        "DCT fluid change at 40,000 km: ₹4,000–6,000 MUST DO — prevents ₹50,000+ gearbox failure",
-        "Compare Kia insurance online — save ₹4,000–6,000/year",
-        "Kia 3yr/1L km warranty + roadside assistance — use it fully",
-        "1.5 MPi petrol: Best for city < 1,500 km/month — lowest maintenance cost"
-      ],
-      annual_running_cost: "₹55,000–85,000/year petrol | ₹45,000–70,000/year diesel"
-    },
-
-    "Sonet": {
-      engine: "1.2L Petrol | 1.0L Turbo GDi Petrol | 1.5L Diesel",
-      service_schedule: [
-        { km: 10000, tasks: ["Oil + filter", "All fluids", "Tyre rotation", "Brake check"], cost: "₹2,800–4,500" },
-        { km: 20000, tasks: ["Air filter", "Diesel fuel filter", "Spark plugs inspect", "Battery check"], cost: "₹3,500–6,000" },
-        { km: 40000, tasks: ["Spark plugs replace", "Brake pads", "Alignment", "Diesel: injector check"], cost: "₹6,000–9,000" }
-      ],
-      known_issues: [
-        "IMT: Takes practice — but reliable if used correctly",
-        "Turbo GDi: Direct injection — carbon buildup on intake valves after 60,000 km (needs walnut blasting ₹3,000–5,000)"
-      ],
-      money_saving_tips: [
-        "Sonet compact size = lower insurance premium",
-        "Diesel 1.5: 23–28 kmpl — outstanding for compact SUV",
-        "Turbo GDi: Exciting but needs full synthetic oil strictly"
-      ],
-      annual_running_cost: "₹38,000–58,000/year"
-    }
-  },
-
-  // ── MAHINDRA ──────────────────────────────────────────────────
-  "Mahindra": {
-    "XUV700": {
-      engine: "2.0L mStallion Turbo Petrol | 2.2L mHawk Diesel",
-      service_schedule: [
-        { km: 10000, tasks: ["Oil + filter (5W-30 petrol / 15W-40 diesel)", "DPF check (diesel)", "All fluids", "ADAS sensor check", "Tyre rotation"], cost: "₹5,000–8,000" },
-        { km: 20000, tasks: ["Air filter replace", "Diesel: Fuel filter CRITICAL", "Spark plugs inspect (petrol)", "AdrenoX screen clean"], cost: "₹7,000–10,000" },
-        { km: 40000, tasks: ["Spark plugs replace", "Brake pads full set", "Transmission oil", "Turbo inspect", "Full alignment"], cost: "₹10,000–18,000" },
-        { km: 60000, tasks: ["Full brake service", "Diesel injector service", "All bushes", "Coolant flush", "Brake fluid flush"], cost: "₹15,000–25,000" },
-        { km: 80000, tasks: ["Major overhaul", "Timing chain/belt", "Diesel: Full injector service", "All seals", "Transfer case fluid (AWD)"], cost: "₹22,000–40,000" }
-      ],
-      known_issues: [
-        "AdrenoX infotainment: Software glitches — multiple OTA updates have improved this",
-        "ADAS: Needs calibration if windshield replaced — ₹8,000–15,000",
-        "Diesel at idle: Some NVH — normal for 2.2L diesel",
-        "Panoramic sunroof: Large area — inspect seals every monsoon",
-        "AWD: Service transfer case every 60,000 km"
-      ],
-      insurance_coverage: {
-        "Large panoramic sunroof": "Zero Dep ESSENTIAL — glass alone ₹20,000–35,000",
-        "ADAS sensors (accident)": "Covered — recalibration also claimable",
-        "AWD transfer case (accident)": "Covered under comprehensive",
-        "Diesel DPF damage (accident)": "Covered",
-        "7-seater: Passenger PA cover": "Separate PA for all 7 seats recommended",
-        "Engine Protection": "CRITICAL for ₹25L+ diesel SUV"
-      },
-      money_saving_tips: [
-        "XUV700 diesel: Best power-to-money ratio in India at this price",
-        "AWD variant: Saves on slippery conditions — but add ₹1,000/year transfer case service",
-        "Zero Dep on XUV700: Can save ₹25,000–50,000 per major claim",
-        "Mahindra extended warranty available: ₹20,000–30,000 for 2 extra years — worth it",
-        "Petrol variant: Lower service cost but higher fuel cost than diesel",
-        "Buy online insurance — save ₹5,000–8,000/year on ₹25L car",
-        "DPF care: Monthly highway run prevents ₹10,000 DPF cleaning"
-      ],
-      annual_running_cost: "₹80,000–1,30,000/year (diesel variant)"
-    },
-
-    "Scorpio N": {
-      engine: "2.0L mStallion Turbo Petrol | 2.2L mHawk Diesel",
-      service_schedule: [
-        { km: 10000, tasks: ["Oil + filter (15W-40 diesel)", "Tyre rotation (all 5 including spare)", "Brake check", "4WD system check (4WD variants)"], cost: "₹4,500–7,500" },
-        { km: 20000, tasks: ["Air filter replace", "Fuel filter (diesel)", "Spark plugs inspect", "4WD hubs check"], cost: "₹6,000–9,500" },
-        { km: 40000, tasks: ["Brake pads full set (4 large pads)", "Transmission fluid", "Coolant", "Full alignment"], cost: "₹9,000–15,000" }
-      ],
-      known_issues: [
-        "Ride quality: Stiff on bad roads — body-on-frame SUV characteristic",
-        "High turning radius — challenging in tight city parking",
-        "Diesel NVH: Louder at idle than monocoque SUVs — normal"
-      ],
-      money_saving_tips: [
-        "4WD: Extremely capable off-road — saves recovery costs",
-        "Body-on-frame: Stronger structure, lower repair cost after off-road damage",
-        "Mahindra service in rural/tier-3 cities: Best in industry"
-      ],
-      annual_running_cost: "₹65,000–1,00,000/year"
-    },
-
-    "Thar": {
-      engine: "2.0L mStallion Turbo Petrol | 2.2L mHawk Diesel",
-      service_schedule: [
-        { km: 10000, tasks: ["Oil + filter (15W-40 diesel / 5W-30 petrol)", "4WD system lubrication", "Tyre rotation (5 tyres)", "Skid plates check", "Diff oil check"], cost: "₹4,000–7,000" },
-        { km: 20000, tasks: ["Fuel filter (diesel)", "Air filter", "4WD transfer case oil", "All greasing points", "Brake check (heavy off-road use)"], cost: "₹6,000–9,000" },
-        { km: 40000, tasks: ["Brake pads + rotors (heavy use)", "Transmission fluid", "All driveshaft boots", "Full underbody check"], cost: "₹9,000–16,000" }
-      ],
-      known_issues: [
-        "Open body/soft top: Road noise, weather ingress normal",
-        "Fuel efficiency: 10–14 kmpl city — not economical for daily commute",
-        "Stiff suspension: Off-road tuned — compromises highway comfort",
-        "Limited boot: 3-door especially — rear seat passengers limited"
-      ],
-      insurance_coverage: {
-        "Off-road damage": "Check policy carefully — some insurers exclude off-road damage",
-        "Soft-top damage": "Covered under comprehensive — Zero Dep for soft-top",
-        "Modified wheels/tyres": "May NOT be covered if not declared"
-      },
-      money_saving_tips: [
-        "Buy 5-door for daily use — better practicality, same capability",
-        "Thar insurance: Declare any modifications or risk claim rejection",
-        "Off-road: Install skid plates from day 1 — saves ₹8,000–20,000 underbody damage",
-        "Petrol vs diesel: If < 1,500 km/month, petrol better — diesel service costs more"
-      ],
-      annual_running_cost: "₹65,000–1,00,000/year (not for fuel-economy seekers!)"
-    }
-  },
-
-  // ── TOYOTA ────────────────────────────────────────────────────
-  "Toyota": {
-    "Innova HyCross": {
-      engine: "2.0L TNGA Petrol Strong Hybrid",
-      service_schedule: [
-        { km: 5000, tasks: ["First free service"], cost: "Free" },
-        { km: 10000, tasks: ["Oil change (0W-16 FULL SYNTHETIC MANDATORY)", "Oil filter", "Tyre rotation", "Brake fluid check (less wear due to regen)", "Coolant check"], cost: "₹4,000–6,000" },
-        { km: 20000, tasks: ["Air filter replace", "Spark plugs inspect (iridium)", "AC cabin filter", "12V battery check", "Hybrid system scan"], cost: "₹5,000–8,000" },
-        { km: 40000, tasks: ["Spark plugs replace (iridium ₹600–800 each)", "Brake pads (minimal wear)", "Hybrid coolant loop check"], cost: "₹8,000–14,000" },
-        { km: 80000, tasks: ["Hybrid inverter coolant flush", "Brake full service", "All seals", "Hybrid battery health report"], cost: "₹15,000–25,000" }
-      ],
-      known_issues: [
-        "MUST use 0W-16 full synthetic oil — using 5W-30 can affect hybrid efficiency and warranty",
-        "No diesel option — some prefer diesel for highway",
-        "AWD not available in India",
-        "AC: Engine shuts off at traffic lights — AC uses battery for 2–3 minutes (normal)"
-      ],
-      insurance_coverage: {
-        "Hybrid battery (accident)": "Covered — but declare hybrid to insurer!",
-        "Hybrid battery degradation": "Toyota warranty: 8yr/1.6L km",
-        "High-voltage cable damage": "Covered — only Toyota-trained technician can repair"
-      },
-      money_saving_tips: [
-        "HyCross: 20–24 kmpl real world — saves ₹8,000–12,000/month vs Crysta diesel at same usage",
-        "Toyota Reliability: Lowest breakdown rate in India — saves on surprise repairs",
-        "Toyota hybrid warranty 8yr/1.6L km — zero battery worry",
-        "0W-16 oil: More expensive (₹700–900/L) but 10,000 km interval",
-        "Regen braking: Brake pads last 80,000–1,00,000 km — saves ₹8,000–12,000",
-        "No DPF hassle unlike diesel MPVs — highway trips not needed to maintain engine"
-      ],
-      annual_running_cost: "₹55,000–85,000/year (best running cost in premium MPV segment)"
-    },
-
-    "Fortuner": {
-      engine: "2.7L Petrol | 2.8L Diesel",
-      service_schedule: [
-        { km: 10000, tasks: ["Oil + filter (15W-40 diesel / 5W-30 petrol)", "DPF check", "Tyre rotation (5 tyres)", "All fluids", "Brake inspect"], cost: "₹6,000–9,000" },
-        { km: 20000, tasks: ["Fuel filter (diesel CRITICAL)", "Air filter replace", "Cabin filter", "4WD check"], cost: "₹8,000–12,000" },
-        { km: 40000, tasks: ["Full brake service", "Transmission fluid", "Transfer case oil", "Diff oil change", "Coolant"], cost: "₹14,000–22,000" },
-        { km: 80000, tasks: ["Full overhaul", "Timing chain/belt", "All gaskets", "Injector service", "Complete 4WD service"], cost: "₹25,000–45,000" }
-      ],
-      known_issues: [
-        "2.8L diesel: Turbo failure reported in some units at high mileage — maintain oil strictly",
-        "Large turning radius — challenging in city",
-        "Fuel efficiency: 12–16 kmpl — heavy SUV burns fuel",
-        "Hard ride quality — ladder frame characteristic"
-      ],
-      insurance_coverage: {
-        "Large body panel replacement": "Zero Dep ESSENTIAL — hood/door ₹25,000–40,000 each",
-        "Engine Protection": "Mandatory for ₹35L+ diesel SUV",
-        "4WD transfer case damage": "Covered"
-      },
-      money_saving_tips: [
-        "Toyota dealer: Genuine parts and quality — worth it for ₹35L+ vehicle",
-        "Fortuner diesel: Service expensive but resale unmatched in India",
-        "Zero Dep: Can save ₹30,000–80,000 per major claim on this car",
-        "Maintain religiously — Fortuner with full service history fetches 30% more resale"
-      ],
-      annual_running_cost: "₹1,00,000–1,50,000/year"
-    }
-  }
-};
-
-// ════════════════════════════════════════════════════════════════
-// DETECT CAR FROM MESSAGE
-// ════════════════════════════════════════════════════════════════
 function detectCarFromMessage(msg) {
   const lower = msg.toLowerCase();
   const brandMap = {
