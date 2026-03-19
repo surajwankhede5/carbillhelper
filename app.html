@@ -493,7 +493,12 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
                 <option>Honda</option><option>Kia</option><option>Toyota</option><option>Mahindra</option>
                 <option>Volkswagen</option><option>Skoda</option><option>MG Motor</option>
                 <option>Renault</option><option>Nissan</option><option>Jeep</option>
-                <option>BMW</option><option>Mercedes-Benz</option><option>Audi</option><option>Other</option>
+                <option>BMW</option><option>Mercedes-Benz</option><option>Audi</option>
+              <option>Lexus</option><option>Volvo</option><option>Land Rover</option>
+              <option>Porsche</option><option>Mini</option><option>Jaguar</option>
+              <option>Maserati</option><option>Lamborghini</option><option>Ferrari</option>
+              <option>Rolls-Royce</option><option>Bentley</option><option>Vinfast</option>
+              <option>OLA Electric</option><option>Other</option>
               </select>
             </div>
             <div class="form-group"><label class="form-label">Model *</label>
@@ -616,6 +621,9 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
                 <option>Volkswagen</option><option>Skoda</option><option>MG Motor</option>
                 <option>Renault</option><option>Nissan</option><option>Jeep</option>
                 <option>BMW</option><option>Mercedes-Benz</option><option>Audi</option>
+              <option>Lexus</option><option>Volvo</option><option>Land Rover</option>
+              <option>Porsche</option><option>Mini</option><option>Jaguar</option>
+              <option>Vinfast</option><option>OLA Electric</option>
               </select>
             </div>
             <div class="form-group">
@@ -1091,7 +1099,10 @@ const CAR_DB = {
     "Invicto": {variants:["Zeta+","Alpha+"],fuel:"Hybrid"},
     "e Vitara": {variants:["Delta+","Zeta+","Alpha+"],fuel:"Electric"},
     "Victoris": {variants:["Zeta","Alpha","Alpha+"],fuel:"Petrol/Hybrid"},
-    "Dzire 2024": {variants:["LXi","VXi","ZXi","ZXi+"],fuel:"Petrol/CNG"}
+    "Dzire 2025": {variants:["LXi","VXi","ZXi","ZXi+"],fuel:"Petrol/CNG"},
+    "Swift Facelift": {variants:["LXi","VXi","ZXi","ZXi+"],fuel:"Petrol/CNG"},
+    "Brezza Facelift": {variants:["LXi","VXi","ZXi","ZXi+"],fuel:"Petrol/CNG"},
+    "Carry": {variants:["Standard"],fuel:"Petrol/CNG"}
   },
   "Hyundai": {
     "Grand i10 Nios": {variants:["Era","Magna","Sportz","Asta","Asta (O)"],fuel:"Petrol/CNG/Diesel"},
@@ -1108,7 +1119,12 @@ const CAR_DB = {
     "Ioniq 5": {variants:["Standard","Long Range"],fuel:"Electric"},
     "Kona Electric": {variants:["Base","Premium"],fuel:"Electric"},
     "Creta N Line": {variants:["N8","N10","N10(O)"],fuel:"Petrol/Diesel"},
-    "Venue N Line": {variants:["N6","N8","N10"],fuel:"Petrol"}
+    "Venue N Line": {variants:["N6","N8","N10"],fuel:"Petrol"},
+    "Creta EV": {variants:["Executive","Smart","Smart (O)","Excellence"],fuel:"Electric"},
+    "Ioniq 6": {variants:["Standard","Long Range"],fuel:"Electric"},
+    "Exter N Line": {variants:["N6","N8"],fuel:"Petrol"},
+    "Prime HB": {variants:["E","S","SX"],fuel:"Petrol"},
+    "Alcazar Facelift": {variants:["Prestige","Prestige (O)","Platinum","Platinum (O)"],fuel:"Petrol/Diesel"}
   },
   "Tata Motors": {
     "Tiago": {variants:["XE","XM","XT","XZ","XZ+"],fuel:"Petrol/CNG/Diesel"},
@@ -1124,7 +1140,13 @@ const CAR_DB = {
     "Curvv EV": {variants:["Creative+","Fearless","Fearless+","Accomplished+"],fuel:"Electric"},
     "Sierra": {variants:["Smart","Smart+","Adventure","Creative","Empowered","Empowered+"],fuel:"Petrol/EV"},
     "Sierra EV": {variants:["Medium Range","Long Range"],fuel:"Electric"},
-    "Avinya": {variants:["Standard"],fuel:"Electric"}
+    "Avinya": {variants:["Standard"],fuel:"Electric"},
+    "Avinya X": {variants:["Standard"],fuel:"Electric"},
+    "Harrier EV": {variants:["Smart","Smart+","Creative","Fearless","Fearless+"],fuel:"Electric"},
+    "Sierra EV": {variants:["Smart","Smart+","Creative","Empowered","Empowered+"],fuel:"Electric"},
+    "Tigor EV": {variants:["XM+","XT+","XZ+","XZ+ Tech"],fuel:"Electric"},
+    "Punch Facelift": {variants:["Pure","Adventure","Accomplished","Creative"],fuel:"Petrol/CNG"},
+    "Nexon Facelift": {variants:["Smart","Smart+","Creative","Fearless","Fearless+"],fuel:"Petrol/Diesel/CNG"}
   },
   "Honda": {
     "Amaze": {variants:["E","S","V","VX"],fuel:"Petrol/Diesel"},
@@ -1163,6 +1185,10 @@ const CAR_DB = {
     "BE 6": {variants:["P65","P85","Thundercloud"],fuel:"Electric"},
     "Thar Roxx": {variants:["MX1","MX3","AX3L","AX5L","AX7L"],fuel:"Petrol/Diesel"},
     "XEV 9e": {variants:["Pack One","Pack Two","Pack Three"],fuel:"Electric"},
+    "XEV 9S": {variants:["Pack One","Pack Two","Pack Three"],fuel:"Electric"},
+    "Thar Facelift": {variants:["AX Hard Top","AX Soft Top","LX Hard Top","LX Soft Top","LX Convertible"],fuel:"Petrol/Diesel"},
+    "XUV.e9": {variants:["Standard","Plus"],fuel:"Electric"},
+    "Bolero 2025": {variants:["B2","B4","B6","B6 (O)"],fuel:"Diesel"},
     "XUV 7XO": {variants:["AX3","AX5","AX7","AX9"],fuel:"Petrol/Diesel"},
     "Bolero Neo+": {variants:["N10","N10 (O)"],fuel:"Diesel"}
   },
@@ -1173,7 +1199,9 @@ const CAR_DB = {
     "Carnival": {variants:["Premium","Prestige","Limousine"],fuel:"Diesel"},
     "EV6": {variants:["GT Line","GT Line AWD"],fuel:"Electric"},
     "EV9": {variants:["GT Line AWD"],fuel:"Electric"},
-    "Syros": {variants:["HTE","HTK","HTK+","HTX","HTX+","X Line"],fuel:"Petrol/Diesel"}
+    "Syros": {variants:["HTE","HTK","HTK+","HTX","HTX+","X Line"],fuel:"Petrol/Diesel"},
+    "EV3": {variants:["Standard Range","Long Range"],fuel:"Electric"},
+    "Carens Facelift": {variants:["Premium","Prestige","Prestige+","Luxury","Luxury+"],fuel:"Petrol/Diesel/CNG"}
   },
   "MG Motor": {
     "Hector": {variants:["Style","Super","Smart","Sharp","Savvy"],fuel:"Petrol/Diesel/Hybrid"},
@@ -1193,6 +1221,8 @@ const CAR_DB = {
     "Kiger": {variants:["RXE","RXL","RXT","RXT(O)","RXZ"],fuel:"Petrol"},
     "Duster": {variants:["Journey MT","Journey CVT","Iconic MT","Iconic CVT","Iconic Hybrid","Adventure MT"],fuel:"Petrol/Hybrid"},
     "Duster 2022": {variants:["RXS","RXZ","RXZ AWD"],fuel:"Petrol/Diesel"},
+    "Duster Hybrid": {variants:["Iconic Hybrid"],fuel:"Hybrid"},
+    "Boreal": {variants:["Standard"],fuel:"Petrol/Hybrid"},
     "Triber AMT": {variants:["RXL","RXT","RXT(O)"],fuel:"Petrol"}
   },
   "Nissan": {
@@ -1201,14 +1231,19 @@ const CAR_DB = {
     "Terrano": {variants:["XL","XV","XV Premium D"],fuel:"Petrol/Diesel"},
     "X-Trail": {variants:["XE","XL","XV","XV Premium"],fuel:"Petrol"},
     "Gravite": {variants:["XE","XL","XV"],fuel:"Petrol"},
-    "Kicks 2024": {variants:["XV","XV Premium"],fuel:"Petrol"}
+    "Magnite Facelift": {variants:["XE","XL","XV","XV Premium","XV Premium(O)"],fuel:"Petrol"},
+    "Ariya": {variants:["Evolve+"],fuel:"Electric"},
+    "X-Trail 2024": {variants:["XL","XV","XV Premium"],fuel:"Petrol"}
   },
   "Volkswagen": {
     "Taigun": {variants:["Comfortline","Highline","Topline","GT"],fuel:"Petrol"},
     "Virtus": {variants:["Comfortline","Highline","Topline","GT"],fuel:"Petrol"},
     "Tiguan": {variants:["Elegance","R-Line"],fuel:"Petrol"},
     "Polo": {variants:["Trendline","Comfortline","Highline"],fuel:"Petrol/Diesel"},
-    "Vento": {variants:["Trendline","Comfortline","Highline"],fuel:"Petrol/Diesel"}
+    "Vento": {variants:["Trendline","Comfortline","Highline"],fuel:"Petrol/Diesel"},
+    "Tayron": {variants:["Comfortline","Highline","R-Line"],fuel:"Petrol"},
+    "ID.4": {variants:["Pro","Pro Performance"],fuel:"Electric"},
+    "Taigun Facelift": {variants:["Comfortline","Highline","Topline","GT"],fuel:"Petrol"}
   },
   "Skoda": {
     "Kushaq": {variants:["Active","Ambition","Style","Monte Carlo"],fuel:"Petrol"},
@@ -1216,14 +1251,19 @@ const CAR_DB = {
     "Kodiaq": {variants:["Style","Sportline","L&K"],fuel:"Petrol"},
     "Superb": {variants:["Style","Sportline","L&K"],fuel:"Petrol"},
     "Octavia": {variants:["Style","RS"],fuel:"Petrol/Diesel"},
-    "Kylaq": {variants:["Classic","Classic+","Signature","Signature+","Prestige"],fuel:"Petrol"}
+    "Kylaq": {variants:["Classic","Classic+","Signature","Signature+","Prestige"],fuel:"Petrol"},
+    "Kushaq Facelift": {variants:["Active","Ambition","Style","Monte Carlo"],fuel:"Petrol"},
+    "Enyaq": {variants:["iV 80","Coupe 80"],fuel:"Electric"},
+    "Octavia RS": {variants:["RS"],fuel:"Petrol"},
+    "Slavia Facelift": {variants:["Active","Ambition","Style","Monte Carlo"],fuel:"Petrol"}
   },
   "Jeep": {
     "Compass": {variants:["Sport","Sport+","Longitude","Limited","Limited Plus","Trailhawk","Model S"],fuel:"Petrol/Diesel"},
     "Meridian": {variants:["Longitude","Limited","Limited Plus","Overland"],fuel:"Diesel"},
     "Wrangler": {variants:["Unlimited"],fuel:"Petrol"},
     "Grand Cherokee": {variants:["Limited","Overland","Summit"],fuel:"Petrol/Diesel"},
-    "Avenger": {variants:["Sport","Longitude","Altitude"],fuel:"Petrol/Diesel/Electric"}
+    "Avenger": {variants:["Sport","Longitude","Altitude"],fuel:"Petrol/Diesel/Electric"},
+    "Grand Cherokee L": {variants:["Laredo","Limited","Overland","Summit"],fuel:"Petrol/Diesel"}
   },
   "Citroen": {
     "C3": {variants:["Live","Feel","Shine"],fuel:"Petrol"},
@@ -1241,7 +1281,13 @@ const CAR_DB = {
     "5 Series": {variants:["520d","520i","530i M Sport"],fuel:"Petrol/Diesel"},
     "7 Series": {variants:["740Li","745Le"],fuel:"Petrol/Hybrid"},
     "iX": {variants:["iX40","iX50"],fuel:"Electric"},
-    "i4": {variants:["eDrive35","eDrive40","M50"],fuel:"Electric"}
+    "i4": {variants:["eDrive35","eDrive40","M50"],fuel:"Electric"},
+    "iX1": {variants:["xDrive30"],fuel:"Electric"},
+    "i5": {variants:["eDrive40","M60"],fuel:"Electric"},
+    "iX3": {variants:["xDrive30"],fuel:"Electric"},
+    "2 Series Gran Coupe": {variants:["220i","220d","M235i"],fuel:"Petrol/Diesel"},
+    "4 Series": {variants:["420i","430i","M440i"],fuel:"Petrol"},
+    "X7": {variants:["xDrive40i","xDrive40d","M60i"],fuel:"Petrol/Diesel"}
   },
   "Mercedes-Benz": {
     "A-Class": {variants:["Progressive","AMG Line"],fuel:"Petrol"},
@@ -1251,7 +1297,12 @@ const CAR_DB = {
     "GLC": {variants:["Progressive","AMG Line","AMG"],fuel:"Petrol/Diesel"},
     "GLE": {variants:["Progressive","AMG Line"],fuel:"Petrol/Diesel"},
     "EQS": {variants:["450+","580 4MATIC"],fuel:"Electric"},
-    "EQB": {variants:["300 4MATIC","350 4MATIC"],fuel:"Electric"}
+    "EQB": {variants:["300 4MATIC","350 4MATIC"],fuel:"Electric"},
+    "EQS SUV": {variants:["580 4MATIC"],fuel:"Electric"},
+    "CLA": {variants:["200","250","35 AMG","45 AMG"],fuel:"Petrol"},
+    "CLA EV": {variants:["Standard","4MATIC"],fuel:"Electric"},
+    "GLS": {variants:["450","Maybach GLS 600"],fuel:"Petrol"},
+    "AMG GT": {variants:["53","63"],fuel:"Petrol"}
   },
   "Audi": {
     "Q3": {variants:["Premium","Premium Plus","Technology"],fuel:"Petrol"},
@@ -1259,7 +1310,13 @@ const CAR_DB = {
     "Q7": {variants:["Premium Plus","Technology"],fuel:"Petrol/Diesel"},
     "A4": {variants:["Premium","Premium Plus","Technology"],fuel:"Petrol"},
     "A6": {variants:["Premium","Technology"],fuel:"Petrol"},
-    "e-tron": {variants:["Standard","Sportback"],fuel:"Electric"}
+    "e-tron": {variants:["Standard","Sportback"],fuel:"Electric"},
+    "Q6 e-tron": {variants:["Standard","S"],fuel:"Electric"},
+    "Q8": {variants:["55 TFSI","SQ8"],fuel:"Petrol"},
+    "Q8 e-tron": {variants:["55","S"],fuel:"Electric"},
+    "A8": {variants:["50 TDI","60 TFSI e"],fuel:"Diesel/Hybrid"},
+    "RS Q8": {variants:["Standard"],fuel:"Petrol"},
+    "e-tron GT": {variants:["Standard","RS"],fuel:"Electric"}
   },
   "BYD": {
     "Atto 3": {variants:["Standard","Extended Range"],fuel:"Electric"},
@@ -1275,6 +1332,99 @@ const CAR_DB = {
     "Model Y": {variants:["Long Range","Performance"],fuel:"Electric"},
     "Model S": {variants:["Long Range","Plaid"],fuel:"Electric"},
     "Model X": {variants:["Long Range","Plaid"],fuel:"Electric"}
+  },
+  "Lexus": {
+    "NX": {variants:["NX 350h"],fuel:"Hybrid"},
+    "ES": {variants:["ES 300h"],fuel:"Hybrid"},
+    "RX": {variants:["RX 350h"],fuel:"Hybrid"},
+    "UX": {variants:["UX 300e"],fuel:"Electric"},
+    "LX": {variants:["LX 500d"],fuel:"Diesel"}
+  },
+  "Volvo": {
+    "XC40": {variants:["B4","Recharge Pure Electric"],fuel:"Petrol/Electric"},
+    "XC60": {variants:["B5","Recharge"],fuel:"Petrol/Hybrid"},
+    "XC90": {variants:["B5","Recharge"],fuel:"Petrol/Hybrid"},
+    "C40": {variants:["Recharge"],fuel:"Electric"},
+    "S90": {variants:["B5 Inscription"],fuel:"Petrol/Hybrid"}
+  },
+  "Land Rover": {
+    "Defender": {variants:["90 P300","110 P300","110 D250"],fuel:"Petrol/Diesel"},
+    "Range Rover": {variants:["SE","HSE","Autobiography"],fuel:"Petrol/Diesel/Hybrid"},
+    "Range Rover Sport": {variants:["SE","HSE","Dynamic HSE"],fuel:"Petrol/Diesel/Hybrid"},
+    "Discovery": {variants:["S","SE","HSE"],fuel:"Petrol/Diesel"},
+    "Freelander 2": {variants:["Pure","SE","HSE"],fuel:"Petrol/Diesel"}
+  },
+  "Porsche": {
+    "Cayenne": {variants:["Base","S","GTS","Turbo","Cayenne E-Hybrid"],fuel:"Petrol/Hybrid"},
+    "Macan": {variants:["Base","S","GTS"],fuel:"Petrol"},
+    "Macan EV": {variants:["Standard","4S"],fuel:"Electric"},
+    "Taycan": {variants:["Standard","4S","Turbo","Turbo S"],fuel:"Electric"},
+    "911": {variants:["Carrera","Carrera S","Carrera 4S","GTS","Turbo","Turbo S"],fuel:"Petrol"},
+    "Panamera": {variants:["Base","4S","Turbo E-Hybrid"],fuel:"Petrol/Hybrid"}
+  },
+  "Mini": {
+    "Cooper": {variants:["3-Door","5-Door","Convertible","S","S Convertible"],fuel:"Petrol"},
+    "Countryman": {variants:["Cooper","Cooper S","Cooper SD"],fuel:"Petrol/Diesel"},
+    "Cooper EV": {variants:["SE","SE Convertible"],fuel:"Electric"},
+    "Clubman": {variants:["Cooper","Cooper S"],fuel:"Petrol/Diesel"}
+  },
+  "Lamborghini": {
+    "Huracan": {variants:["EVO","EVO RWD","STO"],fuel:"Petrol"},
+    "Urus": {variants:["Standard","Performante"],fuel:"Petrol"},
+    "Revuelto": {variants:["Standard"],fuel:"Hybrid"}
+  },
+  "Ferrari": {
+    "Roma": {variants:["Standard"],fuel:"Petrol"},
+    "SF90": {variants:["Stradale","Spider"],fuel:"Hybrid"},
+    "296": {variants:["GTB","GTS"],fuel:"Hybrid"},
+    "Purosangue": {variants:["Standard"],fuel:"Petrol"}
+  },
+  "Rolls-Royce": {
+    "Ghost": {variants:["Standard","Extended","Black Badge"],fuel:"Petrol"},
+    "Cullinan": {variants:["Standard","Black Badge"],fuel:"Petrol"},
+    "Spectre": {variants:["Standard"],fuel:"Electric"},
+    "Phantom": {variants:["Standard","Extended"],fuel:"Petrol"}
+  },
+  "Bentley": {
+    "Bentayga": {variants:["V8","Azure","EWB","Speed"],fuel:"Petrol/Hybrid"},
+    "Continental GT": {variants:["V8","W12","GT Speed"],fuel:"Petrol"},
+    "Flying Spur": {variants:["V8","W12","Mulliner"],fuel:"Petrol"}
+  },
+  "Maserati": {
+    "Ghibli": {variants:["GT","Modena","Trofeo"],fuel:"Petrol/Hybrid"},
+    "Levante": {variants:["GT","Modena","Trofeo"],fuel:"Petrol/Diesel"},
+    "Grecale": {variants:["GT","Modena","Trofeo","Folgore"],fuel:"Petrol/Electric"},
+    "Granturismo": {variants:["Modena","Trofeo","Folgore"],fuel:"Petrol/Electric"}
+  },
+  "Jaguar": {
+    "F-Pace": {variants:["S","SE","R-Dynamic SE","SVR"],fuel:"Petrol/Diesel"},
+    "E-Pace": {variants:["S","SE","R-Dynamic SE"],fuel:"Petrol/Diesel"},
+    "XF": {variants:["Prestige","Portfolio","R-Dynamic S"],fuel:"Petrol/Diesel"},
+    "F-Type": {variants:["R-Dynamic","R","R75"],fuel:"Petrol"}
+  },
+  "Vinfast": {
+    "VF 6": {variants:["Eco","Plus"],fuel:"Electric"},
+    "VF 7": {variants:["Eco","Plus"],fuel:"Electric"},
+    "VF 8": {variants:["Eco","Plus"],fuel:"Electric"},
+    "VF 9": {variants:["Standard"],fuel:"Electric"},
+    "VF e34": {variants:["Standard"],fuel:"Electric"}
+  },
+  "OLA Electric": {
+    "S1 X": {variants:["2kWh","3kWh","4kWh"],fuel:"Electric"},
+    "S1 Pro": {variants:["Standard"],fuel:"Electric"},
+    "S1 Air": {variants:["Standard"],fuel:"Electric"},
+    "Roadster": {variants:["X","S","Pro","Ultra","D"],fuel:"Electric"}
+  },
+  "Ather": {
+    "450X": {variants:["Pro","Max"],fuel:"Electric"},
+    "450S": {variants:["Standard"],fuel:"Electric"},
+    "Rizta": {variants:["S","Z"],fuel:"Electric"}
+  },
+  "Vayve Mobility": {
+    "Eva": {variants:["L1","L2","L3","L4"],fuel:"Electric"}
+  },
+  "PMV": {
+    "EaS-E": {variants:["Standard"],fuel:"Electric"}
   }
 };
 
@@ -3099,7 +3249,22 @@ const BRAND_MODEL_MAP = {
   "BMW":["X1","X3","X5","3 Series","5 Series","iX","i4"],
   "Mercedes-Benz":["A-Class","C-Class","E-Class","GLC","GLE","EQS","EQB"],
   "Audi":["Q3","Q5","Q7","A4","A6","e-tron"],
-  "BYD":["Atto 3","Seal","Sealion 6","Sealion 7","eMAX 7","e6"]
+  "BYD":["Atto 3","Seal","Sealion 6","Sealion 7","eMAX 7","e6"],
+  "Lexus":["NX","ES","RX","UX","LX"],
+  "Volvo":["XC40","XC60","XC90","C40","S90"],
+  "Land Rover":["Defender","Range Rover","Range Rover Sport","Discovery"],
+  "Porsche":["Cayenne","Macan","Macan EV","Taycan","911","Panamera"],
+  "Mini":["Cooper","Countryman","Cooper EV","Clubman"],
+  "Jaguar":["F-Pace","E-Pace","XF","F-Type"],
+  "Maserati":["Ghibli","Levante","Grecale","Granturismo"],
+  "Lamborghini":["Huracan","Urus","Revuelto"],
+  "Ferrari":["Roma","SF90","296","Purosangue"],
+  "Rolls-Royce":["Ghost","Cullinan","Spectre","Phantom"],
+  "Bentley":["Bentayga","Continental GT","Flying Spur"],
+  "Vinfast":["VF 6","VF 7","VF 8","VF 9","VF e34"],
+  "OLA Electric":["S1 X","S1 Pro","S1 Air","Roadster"],
+  "Ather":["450X","450S","Rizta"],
+  "Vayve Mobility":["Eva"]
 };
 
 function updateSchModels(){
