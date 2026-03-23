@@ -100,5 +100,20 @@
       "description": "Check your bill"
     }
   ],
-  "prefer_related_applications": false
+  "prefer_related_applications": false,
+  "serviceworker": {
+    "src": "sw.js",
+    "scope": "/GARAGEGPT/",
+    "update_via_cache": "none",
+    "type": "classic"
+  },
+  "iarc_rating_id": "",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "minimal-ui",
+    "browser"
+  ],
+  "related_applications": [],
+  "scope_extensions": []
 }
