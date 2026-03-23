@@ -1,4 +1,5 @@
 {
+  "id": "/GARAGEGPT/",
   "name": "GarageGPT \u2014 Car & Bike AI Advisor",
   "short_name": "GarageGPT",
   "description": "India's smartest car & bike service tracker. AI-powered bill analysis, parts life, insurance advisor, EMI calculator.",
@@ -62,19 +63,41 @@
       "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
       "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "screenshot-wide.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "GarageGPT Dashboard"
+    },
+    {
+      "src": "screenshot-narrow.png",
+      "sizes": "750x1334",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Track Service, Check Bills, Save Money"
     }
   ],
   "shortcuts": [
     {
       "name": "Add Service",
       "url": "/GARAGEGPT/app.html",
-      "description": "Log a new service record"
+      "description": "Log a new service"
     },
     {
       "name": "Bill Check",
       "url": "/GARAGEGPT/app.html",
-      "description": "Check your service bill"
+      "description": "Check your bill"
     }
   ],
   "prefer_related_applications": false
